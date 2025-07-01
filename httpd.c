@@ -441,32 +441,35 @@ int startup(u_short *port)
 	 int httpd = 0,option;
 	 struct sockaddr_in name;
 	//设置http socket
-	 httpd = socket(PF_INET, SOCK_STREAM, 0); // 创建一个socket，PF_INET表示使用IPv4协议，SOCK_STREAM表示使用TCP协议，0表示使用默认协议
+	 httpd = socket(PF_INET, SOCK_STREAM, 0); // 创建一个socket，PF_INET表示使用IPv4协议，SOCK_STREAM表示使用TCP协议，0表示使用默认协议，返回的socket描述符存储在httpd中
 	 if (httpd == -1)
 		error_die("socket");//连接失败
 	
 	socklen_t optlen;
 	optlen = sizeof(option);
     option = 1;
-    setsockopt(httpd, SOL_SOCKET, SO_REUSEADDR, (void *)&option, optlen);
+    setsockopt(httpd, SOL_SOCKET, SO_REUSEADDR, (void *)&option, optlen);// 这一段都是用于实现端口复用
 	
 	
-	 memset(&name, 0, sizeof(name));
-	 name.sin_family = AF_INET;
-	 name.sin_port = htons(*port);
-	 name.sin_addr.s_addr = htonl(INADDR_ANY);
+	 memset(&name, 0, sizeof(name)); // memset函数用于将一块内存区域置为某个值，第一个参数是内存区域的起始地址，第二个参数是要置的值（限制int），第三个参数是内存区域的大小
+	 name.sin_family = AF_INET; // AF_INET表示使用IPv4协议
+	// htons和htonl函数用于将主机字节序转换为网络字节序
+	// 不同的计算机体系结构（比如 x86、ARM）在存储多字节数据（如 int、short）时，字节顺序可能不同（大端/小端）。
+	// 而网络协议规定，数据在网络上传输时必须用大端字节序（高位字节在前）。
+	 name.sin_port = htons(*port); // 端口号转换并赋值给name.sin_port
+	 name.sin_addr.s_addr = htonl(INADDR_ANY); // INADDR_ANY表示监听所有可用的网络接口
 
-	 if (bind(httpd, (struct sockaddr *)&name, sizeof(name)) < 0)
+	 if (bind(httpd, (struct sockaddr *)&name, sizeof(name)) < 0) // bind函数用于将socket与指定的地址和端口绑定，第一个参数是socket描述符，第二个参数是地址和端口的结构体指针，第三个参数是结构体的大小，bind就是告诉操作系统，这个socket将要监听这个地址和端口
 	  error_die("bind");//绑定失败
-	 if (*port == 0)  /*动态分配一个端口 */
+	 if (*port == 0)  /*如果没有输入端口，则动态分配一个端口 */
 	 {
 	  socklen_t  namelen = sizeof(name);
-	  if (getsockname(httpd, (struct sockaddr *)&name, &namelen) == -1)
+	  if (getsockname(httpd, (struct sockaddr *)&name, &namelen) == -1) // getsockname函数用于获取socket的地址和端口，第一个参数是socket描述符，第二个参数是地址和端口的结构体指针，第三个参数是结构体的大小，这个函数的执行结果就是将socket的地址和端口存储在name中
 	   error_die("getsockname");
-	  *port = ntohs(name.sin_port);
+	  *port = ntohs(name.sin_port); // ntohs函数用于将网络字节序转换为主机字节序，将name.sin_port转换为主机字节序并赋值给port，实现动态分配端口
 	 }
 
-	 if (listen(httpd, 5) < 0)
+	 if (listen(httpd, 5) < 0) // listen函数用于将socket设置为监听状态，第一个参数是socket描述符，第二个参数是监听队列的最大长度，listen就是告诉操作系统，这个socket将要监听这个端口，并且最多可以接受5个连接请求
 	  error_die("listen");
 	 return(httpd);
 }
@@ -514,7 +517,7 @@ int main(void)
 
 		  client_sock = accept(server_sock,
 							   (struct sockaddr *)&client_name,
-							   &client_name_len);
+							   &client_name_len); // accept函数用于接受一个连接请求，第一个参数是socket描述符，第二个参数是客户端的地址和端口的结构体指针，第三个参数是结构体的大小，accept就是告诉操作系统，这个socket将要接受一个连接请求，并且将客户端的地址和端口存储在client_name中，让服务器接收一个新的客户端连接，并为它分配一个新的 socket，后续所有和这个客户端的通信都用 client_sock 这个描述符来完成
 		  
 		  printf("New connection....  ip: %s , port: %d\n",inet_ntoa(client_name.sin_addr),ntohs(client_name.sin_port));
 		  if (client_sock == -1)
