@@ -441,7 +441,7 @@ int startup(u_short *port)
 	 int httpd = 0,option;
 	 struct sockaddr_in name;
 	//设置http socket
-	 httpd = socket(PF_INET, SOCK_STREAM, 0);
+	 httpd = socket(PF_INET, SOCK_STREAM, 0); // 创建一个socket，PF_INET表示使用IPv4协议，SOCK_STREAM表示使用TCP协议，0表示使用默认协议
 	 if (httpd == -1)
 		error_die("socket");//连接失败
 	
