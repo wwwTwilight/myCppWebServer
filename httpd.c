@@ -38,45 +38,45 @@ void unimplemented(int);
 //  处理监听到的 HTTP 请求
 void *accept_request(void* from_client)
 {
-	 int client = *(int *)from_client;
-	 char buf[1024];
-	 int numchars;
-	 char method[255];
-	 char url[255];
-	 char path[512];
-	 size_t i, j;
-	 struct stat st; 
-	 int cgi = 0;     
-	 char *query_string = NULL;
+	 int client = *(int *)from_client; // 获取客户端的socket，转换成对应的数据类型
+	 char buf[1024]; // 用于存放客户端发送过来的数据
+	 int numchars; // 用于记录每次读取到的字符数，常用于循环读取 HTTP 请求行
+	 char method[255]; // 用于存放客户端发送过来的请求方式GET，POST等
+	 char url[255]; // 用于存放客户端发送过来的url
+	 char path[512]; // 用于存放客户端发送过来的请求路径
+	 size_t i, j; // 用于循环遍历
+	 struct stat st; // 用于存放文件或目录的属性信息（通过 stat() 函数获取），比如判断请求的是不是目录、文件是否可执行等。
+	 int cgi = 0; // 用于标记当前请求是否需要 CGI 处理（动态内容），0 表示不是，1 表示需要
+	 char *query_string = NULL; // 用于存放客户端发送过来的查询参数（GET 请求）（即 ? 后面的部分），如果有的话
 
-	 numchars = get_line(client, buf, sizeof(buf));
+	 numchars = get_line(client, buf, sizeof(buf)); // 从客户端读取一行数据，并返回读取到的字符数，同时，这个函数也将每一个字节存放到了buf数组中
 	
 
-	i = 0; 
-	j = 0;
-	 while (!ISspace(buf[j]) && (i < sizeof(method) - 1))
+	i = 0; // i是用来遍历单个项目的
+	j = 0; // j是用来遍历整个报文的
+	 while (!ISspace(buf[j]) && (i < sizeof(method) - 1)) // ISspace() 函数用于判断一个字符是否是空白字符（空格、制表符、换行符等），如果是，则返回非零值，否则返回0，放在这里就是一直读内容直到读到空白的内容为止，同时防止越界
 	 {
 		 //提取其中的请求方式
 		  method[i] = buf[j];
 		  i++; 
 		  j++;
 	 }
-	method[i] = '\0';
+	method[i] = '\0'; // 将请求方式字符串结尾置为'\0'，表示字符串结束
 
-	 if (strcasecmp(method, "GET") && strcasecmp(method, "POST"))
+	 if (strcasecmp(method, "GET") && strcasecmp(method, "POST")) // strcasecmp() 函数用于比较两个字符串，忽略大小写，如果相等，则返回0，否则返回非零值，放在这里就是判断请求方式是否是 GET 或 POST，如果不是，则返回非零值，表示请求方式不支持
 	 {
-		  unimplemented(client);
+		  unimplemented(client); // 如果请求方式不支持，则调用 unimplemented() 函数，向客户端发送 501 错误
 		  return NULL;
 	 }
 
 	 if (strcasecmp(method, "POST") == 0)  cgi = 1;
 	  
 	 i = 0;
-	 while (ISspace(buf[j]) && (j < sizeof(buf)))
+	 while (ISspace(buf[j]) && (j < sizeof(buf))) // 跳过空白字符，直到遇到非空白字符
 	  j++;
 
 
-	 while (!ISspace(buf[j]) && (i < sizeof(url) - 1) && (j < sizeof(buf)))
+	 while (!ISspace(buf[j]) && (i < sizeof(url) - 1) && (j < sizeof(buf))) // 读url
 	 {
 		  url[i] = buf[j];
 		  i++; j++;
@@ -103,27 +103,27 @@ void *accept_request(void* from_client)
 
 		 }
 
-	 sprintf(path, "httpdocs%s", url);
+	 sprintf(path, "httpdocs%s", url); // 这个函数是将格式化的数据写入字符串，放在这里就是将url拼接成完整的请求路径，比如将 /index.html 拼接成 httpdocs/index.html，这样就可以在服务器上找到对应的文件了
 
 
-	 if (path[strlen(path) - 1] == '/')
+	 if (path[strlen(path) - 1] == '/') // 判断请求的是不是目录，如果是，就拼接上默认的文件名 test.html
 	 {
 		 strcat(path, "test.html");
 
 	 }
- 
-	if (stat(path, &st) == -1) {
-		  while ((numchars > 0) && strcmp("\n", buf))  
-		   numchars = get_line(client, buf, sizeof(buf));
+	 // 到这里为止，已经获取到了请求的文件路径，请求行已经处理完毕，接下来就是判断请求的文件是否存在，如果存在，则返回文件内容，如果不存在，则返回 404 错误
+	if (stat(path, &st) == -1) { // stat() 函数用于获取文件或目录的属性信息，放在这里就是判断请求的文件或目录是否存在，如果不存在，则返回 -1，这里就是如果没有找到对应的文件或目录，则调用 not_found() 函数，向客户端发送 404 错误。st变量是struct stat类型，用于存放文件或目录的属性信息，当stat()函数返回成功时，st变量中就存放了文件或目录的属性信息，比如文件大小、创建时间、修改时间等。
+		  while ((numchars > 0) && strcmp("\n", buf))  // 即使是错误的路径也要处理完用户的请求头，这是规范的做法，strcmp是相同的时候结果为0
+		   numchars = get_line(client, buf, sizeof(buf)); // 一行一行读，直到读到空行
 
-		  not_found(client);
+		  not_found(client); // 最后404
 	}
 	else
 	{
 	
 
-		if ((st.st_mode & S_IFMT) == S_IFDIR)//S_IFDIR代表目录
-	   //如果请求参数为目录, 自动打开test.html
+		if ((st.st_mode & S_IFMT) == S_IFDIR)//S_IFDIR代表目录，st.st_mode & S_IFMT，这里的st_mode是文件属性，S_IFMT是文件类型掩码，通过这个位运算可以判断文件类型
+	   //如果请求参数为目录, 自动打开test.html，这一步是为了防止有些用户输入路由时，没有输入文件名，而是输入了目录，比如 /index，这时就需要自动打开目录下的 test.html 文件
 		{
 			strcat(path, "/test.html");
 		}
@@ -145,7 +145,7 @@ void *accept_request(void* from_client)
   
 	 }
 
-	 close(client);
+	 close(client); // 关闭客户端的socket
 	 //printf("connection close....client: %d \n",client);
 	 return NULL;
 }
@@ -173,8 +173,8 @@ void cat(int client, FILE *resource)
 {
 	//发送文件的内容
 	 char buf[1024];
-	 fgets(buf, sizeof(buf), resource);
-	 while (!feof(resource))
+	 fgets(buf, sizeof(buf), resource); // 这个函数可以从resource文件中读取一行到数组buf中
+	 while (!feof(resource)) // 判断是否已经读取到文件末尾，这个函数读到末尾时返回非零值，否则返回0
 	 {
 
 		  send(client, buf, strlen(buf), 0);
@@ -335,34 +335,36 @@ void execute_cgi(int client, const char *path,
 //解析一行http报文
 int get_line(int sock, char *buf, int size)
 {
-	 int i = 0;
-	 char c = '\0';
+	 int i = 0; // 储存buf的下标
+	 char c = '\0'; // 储存每次接收到的字符
 	 int n;
 
 	 while ((i < size - 1) && (c != '\n'))
 	 {
 		  n = recv(sock, &c, 1, 0);
+		  // recv函数，从套接字sock中读取数据，将数据存入c中，1表示读取一个字符，0表示阻塞读取（0就是默认行为）
 
 		  if (n > 0) 
 		  {
 			   if (c == '\r')
 			   {
 
-				n = recv(sock, &c, 1, MSG_PEEK);
+				n = recv(sock, &c, 1, MSG_PEEK); // MSG_PEEK表示窥探下一个字符，不将其从缓冲区中移除
 				if ((n > 0) && (c == '\n'))
 				recv(sock, &c, 1, 0);
 				else
 				 c = '\n';
 			   }
-			   buf[i] = c;
+			   // 上面这一段主要是用于处理\r\n的情况，在不同的操作系统下，回车换行符可能不同，当读取到\r时，需要判断下一个字符是否为\n，如果是，则一起读取，如果不是，则将\r替换为\n
+			   buf[i] = c; // 将读取到的字符存入buf中
 			   i++;
 			   
 		  }
-		  else
+		  else // 如果n < 0，表示读取失败，直接将c设置为\n，结束循环
 		   c = '\n';
 	 }
-	 buf[i] = '\0';
-	return(i);
+	 buf[i] = '\0'; // 最后一个是结束符
+	return(i); // 返回读取到的字符数，不包括最后的结束符
 }
 
 
@@ -413,12 +415,12 @@ void not_found(int client)
 //如果不是CGI文件，也就是静态文件，直接读取文件返回给请求的http客户端即可
 void serve_file(int client, const char *filename)
 {
-	 FILE *resource = NULL;
-	 int numchars = 1;
+	 FILE *resource = NULL; // FILE是C语言中用于文件操作的类型，resource是文件指针
+	 int numchars = 1; // 初始化numchars为1，确保后面可以进循环
 	 char buf[1024];
 	 buf[0] = 'A'; 
-	 buf[1] = '\0';
-	 while ((numchars > 0) && strcmp("\n", buf)) 
+	 buf[1] = '\0'; // 初始化buf，不然后面的strcmp就是0了，导致循环直接被跳过
+	 while ((numchars > 0) && strcmp("\n", buf))  // 这个循环也是为了将请求头的信息处理完，直到遇到空行
 	 {
 		 numchars = get_line(client, buf, sizeof(buf));
 	 }
@@ -469,7 +471,7 @@ int startup(u_short *port)
 	  *port = ntohs(name.sin_port); // ntohs函数用于将网络字节序转换为主机字节序，将name.sin_port转换为主机字节序并赋值给port，实现动态分配端口
 	 }
 
-	 if (listen(httpd, 5) < 0) // listen函数用于将socket设置为监听状态，第一个参数是socket描述符，第二个参数是监听队列的最大长度，listen就是告诉操作系统，这个socket将要监听这个端口，并且最多可以接受5个连接请求
+	 if (listen(httpd, 5) < 0) // listen函数用于将socket设置为监听状态，第一个参数是socket描述符，第二个参数是监听队列的最大长度，listen就是告诉操作系统，这个socket将要监听这个端口，队列的长度说明等待的连接请求的最大数量，不包括处理中的，只是等待accept的会话数
 	  error_die("listen");
 	 return(httpd);
 }
@@ -519,15 +521,15 @@ int main(void)
 							   (struct sockaddr *)&client_name,
 							   &client_name_len); // accept函数用于接受一个连接请求，第一个参数是socket描述符，第二个参数是客户端的地址和端口的结构体指针，第三个参数是结构体的大小，accept就是告诉操作系统，这个socket将要接受一个连接请求，并且将客户端的地址和端口存储在client_name中，让服务器接收一个新的客户端连接，并为它分配一个新的 socket，后续所有和这个客户端的通信都用 client_sock 这个描述符来完成
 		  
-		  printf("New connection....  ip: %s , port: %d\n",inet_ntoa(client_name.sin_addr),ntohs(client_name.sin_port));
+		  printf("New connection....  ip: %s , port: %d\n",inet_ntoa(client_name.sin_addr),ntohs(client_name.sin_port)); // inet_ntoa函数用于将网络字节序的ip地址转换为点分十进制的字符串，ntohs函数用于将网络字节序的端口号转换为主机字节序
 		  if (client_sock == -1)
 				error_die("accept");
 
-		 if (pthread_create(&newthread , NULL, accept_request, (void*)&client_sock) != 0)
+		 if (pthread_create(&newthread , NULL, accept_request, (void*)&client_sock) != 0) // 为每一个申请的连接创建一个线程，accept_request函数就是处理这个连接的函数
 		   perror("pthread_create");
 
 	 }
-	 close(server_sock);
+	 close(server_sock); // 关闭服务器的socket描述符
 
 	return(0);
 }
