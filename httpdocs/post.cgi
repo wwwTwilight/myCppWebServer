@@ -35,7 +35,8 @@ if length:
     print('</ul>')
     print('</body>')
     print('</html>')
-    
+
+else:
 # 无POST数据时的处理
     print("Content-type:text/html\n")
     # 输出无数据提示
