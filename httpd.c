@@ -299,7 +299,7 @@ void execute_cgi(int client, const char *path,
 		  execl(path, path, NULL);//执行CGI脚本，如果执行成功，则不会返回，直接覆盖这个子进程，如果执行失败，则返回-1
 		  exit(0);
 	 } 
-	 else {  
+	 else {  // 父进程
 		  close(cgi_output[1]);
 		  close(cgi_input[0]);
 		  if (strcasecmp(method, "POST") == 0) // 如果是post请求，读取请求体中的数据，发送给cgi脚本
@@ -309,17 +309,18 @@ void execute_cgi(int client, const char *path,
 
 				recv(client, &c, 1, 0);
 
-				write(cgi_input[1], &c, 1);
+				write(cgi_input[1], &c, 1); // 因为前面绑定了cgi_input[1]到标准输入，所以这里直接向cgi_input[1]写数据，也就是向标准输入写数据，也就是向cgi脚本写数据
 			   }
 
 
 
 		//读取cgi脚本返回数据
 
-		while (read(cgi_output[0], &c, 1) > 0)
+		while (read(cgi_output[0], &c, 1) > 0) // 因为前面绑定了cgi_output[0]到标准输出，所以这里直接从cgi_output[0]读数据，也就是从标准输出读数据，也就是从cgi脚本输出中读数据
+		// 关于同步的问题，read函数，从套接字cgi_output[0]中读取数据，将数据存入c中，1表示读取一个字符，默认是阻塞读取，也就是如果缓冲区中没有数据，就会一直阻塞，除非管道的子进程写端关闭
 			//发送给浏览器
 		{			
-			send(client, &c, 1, 0);
+			send(client, &c, 1, 0); // 将cgi脚本返回的数据发送给客户端
 		}
 
 		//运行结束关闭
