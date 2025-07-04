@@ -212,8 +212,8 @@ void execute_cgi(int client, const char *path,
 
 
 	 char buf[1024];
-	 int cgi_output[2];
-	 int cgi_input[2];
+	 int cgi_output[2]; // cgi_output[0]是读通道，cgi_output[1]是写通道
+	 int cgi_input[2]; // cgi_input[0]是读通道，cgi_input[1]是写通道
 	 
 	 pid_t pid;
 	 int status;
@@ -226,35 +226,35 @@ void execute_cgi(int client, const char *path,
 	 //默认字符
 	 buf[0] = 'A'; 
 	 buf[1] = '\0';
-	 if (strcasecmp(method, "GET") == 0)
+	 if (strcasecmp(method, "GET") == 0) // 如果请求方式是 GET
 
 		 while ((numchars > 0) && strcmp("\n", buf))
 		 {
 			 numchars = get_line(client, buf, sizeof(buf));
 		 }
-	 else    
+	 else    // 如果是 POST
 	 {
 
 		  numchars = get_line(client, buf, sizeof(buf));
 		  while ((numchars > 0) && strcmp("\n", buf))
 		  {
 				buf[15] = '\0';
-			   if (strcasecmp(buf, "Content-Length:") == 0)
+			   if (strcasecmp(buf, "Content-Length:") == 0) // 如果请求头中有 Content-Length:，则表示请求体中有数据，需要读取请求体的数据
 					content_length = atoi(&(buf[16]));
 
-			   numchars = get_line(client, buf, sizeof(buf));
+			   numchars = get_line(client, buf, sizeof(buf)); // 对于其他的行，直接读内容即可
 		  }
 
-		  if (content_length == -1) {
+		  if (content_length == -1) { // 如果请求头中没有 Content-Length:，则表示请求体中没有数据，直接返回 400 错误
 		   bad_request(client);
 		   return;
 		   }
 	 }
 
 
-	 sprintf(buf, "HTTP/1.0 200 OK\r\n");
+	 sprintf(buf, "HTTP/1.0 200 OK\r\n"); // 准备好请求行，发送给客户端
 	 send(client, buf, strlen(buf), 0);
-	 if (pipe(cgi_output) < 0) {
+	 if (pipe(cgi_output) < 0) { // 创建两个管道
 		  cannot_execute(client);
 		  return;
 	 }
@@ -263,7 +263,7 @@ void execute_cgi(int client, const char *path,
 		  return;
 	 }
 
-	 if ( (pid = fork()) < 0 ) {
+	 if ( (pid = fork()) < 0 ) { // 创建子进程，这是为了隔离父进程和子进程，防止cgi脚本修改了父进程的环境变量，导致父进程无法正常工作
 		  cannot_execute(client);
 		  return;
 	 }
@@ -273,8 +273,8 @@ void execute_cgi(int client, const char *path,
 		  char query_env[255];
 		  char length_env[255];
 
-		  dup2(cgi_output[1], 1);
-		  dup2(cgi_input[0], 0);
+		  dup2(cgi_output[1], 1); // 将cgi_output中的写通道重定向到标准输出，这样cgi脚本就可以向标准输出写数据，也就是向客户端发送数据
+		  dup2(cgi_input[0], 0); // 将cgi_input中的读通道重定向到标准输入，这样cgi脚本就可以从标准输入读数据，也就是从客户端接收数据
 
 
 		  close(cgi_output[0]);//关闭了cgi_output中的读通道
@@ -282,7 +282,7 @@ void execute_cgi(int client, const char *path,
 
 
 		  sprintf(meth_env, "REQUEST_METHOD=%s", method);
-		  putenv(meth_env);
+		  putenv(meth_env); // 设置环境变量，这里的环境变量是进程的环境变量，子进程会继承父进程的环境变量，但是子进程也可以修改环境变量，这里就是修改环境变量，告诉cgi脚本请求的方式是GET还是POST
 
 		  if (strcasecmp(method, "GET") == 0) {
 		  //存储QUERY_STRING
@@ -296,13 +296,13 @@ void execute_cgi(int client, const char *path,
 		  }
 
 
-		  execl(path, path, NULL);//执行CGI脚本
+		  execl(path, path, NULL);//执行CGI脚本，如果执行成功，则不会返回，直接覆盖这个子进程，如果执行失败，则返回-1
 		  exit(0);
 	 } 
 	 else {  
 		  close(cgi_output[1]);
 		  close(cgi_input[0]);
-		  if (strcasecmp(method, "POST") == 0)
+		  if (strcasecmp(method, "POST") == 0) // 如果是post请求，读取请求体中的数据，发送给cgi脚本
 
 			 for (i = 0; i < content_length; i++) 
 			   {
