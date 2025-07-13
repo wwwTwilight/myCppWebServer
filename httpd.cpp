@@ -50,7 +50,7 @@ int getHttpLine(int client_socket, vector<char> &buffer, int buffer_size = -1) {
 	char c = '\0';
 	int n = 0;
 
-	while(i < buffer_size && c != '\0') {
+	while(i < buffer_size && c != '\n') {
 		n = recv(client_socket, &c, 1, 0);
 
 		if(n > 0) {
@@ -60,12 +60,18 @@ int getHttpLine(int client_socket, vector<char> &buffer, int buffer_size = -1) {
 					n = recv(client_socket, &c, 1, 0);
 				}
 				else {
-					c = '\0';
+					c = '\n';
 				}
 			}
+			buffer[i] = c;
+			i++;
+		}
+		else {
+			c = '\n';
 		}
 	}
-
+	buffer[i] = '\0';
+	return i;
 }
 
 void header(int client_socket) {
@@ -86,10 +92,9 @@ void header(int client_socket) {
 void *accept_request(int client_socket) {
 	vector<char> buffer(1024);
 	int n = 1;
-	while(n > 0) {
-		n = recv(client_socket, buffer.data(), sizeof(buffer), 0); // 这个是阻塞的，读完就卡住了
+	while(n > 0 && strcmp("\n", buffer.data())) {
+		n = getHttpLine(client_socket, buffer, buffer.size()); // 这个是阻塞的，读完就卡住了
 		cout << buffer.data();
-		
 	}
 
 	header(client_socket);
