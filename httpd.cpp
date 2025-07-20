@@ -36,25 +36,25 @@ void error_message(const string& message) {
 void method_not_supported(int client_socket) {
     vector<char> buffer(1024);
 
-	sprintf(buffer.data(), "HTTP/1.0 501 Not Implemented\r\n");
+	snprintf(buffer.data(), buffer.size(), "HTTP/1.0 501 Not Implemented\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
 
-	sprintf(buffer.data(), "Server: MyPoorWebServer\r\n");
+	snprintf(buffer.data(), buffer.size(), "Server: MyPoorWebServer\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
 
-	sprintf(buffer.data(), "Content-Type: text/html\r\n");
+	snprintf(buffer.data(), buffer.size(), "Content-Type: text/html\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
 
-	sprintf(buffer.data(), "charset=UTF-8\r\n"); // 有中文，需要设置字符集，确保别的浏览器能正确显示
+	snprintf(buffer.data(), buffer.size(), "charset=UTF-8\r\n"); // 有中文，需要设置字符集，确保别的浏览器能正确显示
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
 
-	sprintf(buffer.data(), "\r\n");
+	snprintf(buffer.data(), buffer.size(), "\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
 
-	sprintf(buffer.data(), "<html><hea><title>Method Not Implemented</title></head>\r\n");
+	snprintf(buffer.data(), buffer.size(), "<html><hea><title>Method Not Implemented</title></head>\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
 
-	sprintf(buffer.data(), "<body><p>HTTP request method not supported.</p></body></html>\r\n");
+	snprintf(buffer.data(), buffer.size(), "<body><p>HTTP request method not supported.</p></body></html>\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
 
 	cout << "client: " << client_socket << " 501 Method Not Implemented" << endl;
@@ -89,44 +89,44 @@ int getHttpLine(int client_socket, string& buffer) {
 void header(int client_socket) {
 	vector<char> buffer(1024);
 
-	sprintf(buffer.data(), "HTTP/1.0 200 OK\r\n");
+	snprintf(buffer.data(), buffer.size(), "HTTP/1.0 200 OK\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
 
-	sprintf(buffer.data(), "Server: MyPoorWebServer\r\n");
+	snprintf(buffer.data(), buffer.size(), "Server: MyPoorWebServer\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
 
-	sprintf(buffer.data(), "Content-Type: text/html\r\n");
+	snprintf(buffer.data(), buffer.size(), "Content-Type: text/html\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
 
-	sprintf(buffer.data(), "charset=UTF-8\r\n");
+	snprintf(buffer.data(), buffer.size(), "charset=UTF-8\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
 
-	sprintf(buffer.data(), "\r\n");
+	snprintf(buffer.data(), buffer.size(), "\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
 }
 
 void not_found(int client_socket) {
     vector<char> buffer(1024);
 
-	sprintf(buffer.data(), "HTTP/1.0 404 Not Found\r\n");
+	snprintf(buffer.data(), buffer.size(), "HTTP/1.0 404 Not Found\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
 
-	sprintf(buffer.data(), "Server: MyPoorWebServer\r\n");
+	snprintf(buffer.data(), buffer.size(), "Server: MyPoorWebServer\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
 
-	sprintf(buffer.data(), "Content-Type: text/html\r\n");
+	snprintf(buffer.data(), buffer.size(), "Content-Type: text/html\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
 
-	sprintf(buffer.data(), "charset=UTF-8\r\n");
+	snprintf(buffer.data(), buffer.size(), "charset=UTF-8\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
 
-	sprintf(buffer.data(), "\r\n");
+	snprintf(buffer.data(), buffer.size(), "\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
 
-	sprintf(buffer.data(), "<html><head><title>Not Found</title></head>\r\n");
+	snprintf(buffer.data(), buffer.size(), "<html><head><title>Not Found</title></head>\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
 
-	sprintf(buffer.data(), "<body><p>HTTP request file not found.</p></body></html>\r\n");
+	snprintf(buffer.data(), buffer.size(), "<body><p>HTTP request file not found.</p></body></html>\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
 
 	cout << "client: " << client_socket << " 404 Not Found" << endl;
@@ -167,7 +167,7 @@ void exec_cgi(int client_socket, const string& method, const string& _path, cons
 		}
 	}
 
-	sprintf(buffer.data(), "HTTP/1.1 200 OK\r\n");
+	snprintf(buffer.data(), buffer.size(), "HTTP/1.1 200 OK\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
 
 	if (pipe(cgi_output) < 0) {
@@ -353,7 +353,7 @@ int startSever(unsigned short& port) {
         error_exit("setsockopt error");
     }
 
-    if (bind(server_socket, (sockaddr*)&name, name_len) < 0) {
+    if (::bind(server_socket, (sockaddr*)&name, name_len) < 0) {
         error_exit("bind error");
     }
 
