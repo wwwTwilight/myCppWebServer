@@ -29,24 +29,38 @@ void error_exit(const string& message) {
     exit(0);
 }
 
+void error_message(const string& message) {
+	cout << "Error: " << message << endl;
+}
+
 void method_not_supported(int client_socket) {
     vector<char> buffer(1024);
+
 	sprintf(buffer.data(), "HTTP/1.0 501 Not Implemented\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
+
 	sprintf(buffer.data(), "Server: MyPoorWebServer\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
+
 	sprintf(buffer.data(), "Content-Type: text/html\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
+
+	sprintf(buffer.data(), "charset=UTF-8\r\n"); // 有中文，需要设置字符集，确保别的浏览器能正确显示
+	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
+
 	sprintf(buffer.data(), "\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
+
 	sprintf(buffer.data(), "<html><hea><title>Method Not Implemented</title></head>\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
+
 	sprintf(buffer.data(), "<body><p>HTTP request method not supported.</p></body></html>\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
+
 	cout << "client: " << client_socket << " 501 Method Not Implemented" << endl;
 }
 
-// 获取一行HTTP报文
+// 获取一行HTTP报文，存放在buffer中，返回读取的字符数
 int getHttpLine(int client_socket, string& buffer) {
     buffer.clear();
     char c = '\0';
@@ -74,6 +88,7 @@ int getHttpLine(int client_socket, string& buffer) {
 // 发送HTTP1.0请求头
 void header(int client_socket) {
 	vector<char> buffer(1024);
+
 	sprintf(buffer.data(), "HTTP/1.0 200 OK\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
 
@@ -83,33 +98,151 @@ void header(int client_socket) {
 	sprintf(buffer.data(), "Content-Type: text/html\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
 
+	sprintf(buffer.data(), "charset=UTF-8\r\n");
+	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
+
 	sprintf(buffer.data(), "\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
 }
 
 void not_found(int client_socket) {
     vector<char> buffer(1024);
+
 	sprintf(buffer.data(), "HTTP/1.0 404 Not Found\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
+
 	sprintf(buffer.data(), "Server: MyPoorWebServer\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
+
 	sprintf(buffer.data(), "Content-Type: text/html\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
+
+	sprintf(buffer.data(), "charset=UTF-8\r\n");
+	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
+
 	sprintf(buffer.data(), "\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
+
 	sprintf(buffer.data(), "<html><head><title>Not Found</title></head>\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
+
 	sprintf(buffer.data(), "<body><p>HTTP request file not found.</p></body></html>\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
 
 	cout << "client: " << client_socket << " 404 Not Found" << endl;
 }
 
+void exec_cgi(int client_socket, const string& method, const string& _path, const string& query) {
+	string buffer;
+
+	string path = "httpdocs" + _path;
+
+	int cgi_input[2];
+	int cgi_output[2];
+
+	int n = 1;
+	int content_length = -1;
+	if (pipe(cgi_input) < 0 || pipe(cgi_output) < 0) {
+		error_message("pipe error");
+		return;
+	}
+
+	if(strcasecmp(method.data(), "GET") == 0) {
+		while(n > 0 && strcmp(buffer.data(), "\n") != 0) { // 目前还没有处理GET请求的query，先空着
+			n = getHttpLine(client_socket, buffer);
+		}
+	}
+	else {
+		n = getHttpLine(client_socket, buffer);
+		while((n > 0) && (strcmp(buffer.data(), "\n"))) {
+			if (strcasecmp(buffer.substr(0, 15).data(), "Content-Length:") == 0) {
+				content_length = atoi(buffer.substr(strlen("Content-Length:")).data());
+			}
+			n = getHttpLine(client_socket, buffer);
+		}
+
+		if (content_length < 0) {
+			error_message("Content-Length not found");
+			return;
+		}
+	}
+
+	sprintf(buffer.data(), "HTTP/1.1 200 OK\r\n");
+	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
+
+	if (pipe(cgi_output) < 0) {
+		error_message("pipe error");
+		return;
+	}
+	if (pipe(cgi_input) < 0) {
+		error_message("pipe error");
+		return;
+	}
+
+	int pid = fork();
+	if (pid < 0) {
+		error_message("fork error");
+		return;
+	}
+	if(pid == 0) {
+		dup2(cgi_input[0], STDIN_FILENO);
+		dup2(cgi_output[1], STDOUT_FILENO);
+		close(cgi_input[1]);
+		close(cgi_output[0]);
+		
+		static string method_env = "REQUEST_METHOD=" + method;
+		putenv(method_env.data());
+
+		if(strcasecmp(method.data(), "GET") == 0) {
+			static string query_env = "QUERY_STRING=" + query;
+			putenv(query_env.data());
+		}
+		else {
+			static string content_length_env = "CONTENT_LENGTH=" + to_string(content_length);
+			putenv(content_length_env.data());
+		}
+
+		if(execl(path.data(), path.data(), NULL) < 0) {
+			error_message("execl error");
+			close(cgi_input[0]);
+			close(cgi_output[1]);
+
+			exit(1);
+		}
+		close(cgi_input[0]);
+		close(cgi_output[1]);
+
+		exit(0);
+	}
+	else {
+		close(cgi_input[0]);
+		close(cgi_output[1]);
+
+		if (strcasecmp(method.data(), "POST") == 0) {
+			for(int i = 0; i < content_length; i++) {
+				char c;
+				recv(client_socket, &c, 1, 0);
+				write(cgi_input[1], &c, 1);
+				
+			}
+		}
+
+		while(read(cgi_output[0], buffer.data(), 1) > 0) {
+			send(client_socket, buffer.data(), 1, 0);
+		}
+
+		close(cgi_input[1]);
+		close(cgi_output[0]);
+
+		waitpid(pid, NULL, 0);
+	}
+}
+
 // 打开文件并发送内容，自带请求头
 void open_file(int& client_socket, const string& filename) {
     string fullpath = "httpdocs" + filename;
     ifstream ifile(fullpath.data(), ios::binary);
-    vector<char> buffer(1024);
+    vector<char> buffer(4096);
     if (!ifile) {
         not_found(client_socket);
         return;
@@ -121,10 +254,10 @@ void open_file(int& client_socket, const string& filename) {
     // 发送带 Content-Length 的 header，1.1协议特色
     vector<char> headbuf(256);
     snprintf(headbuf.data(), headbuf.size(),
-        "HTTP/1.1 200 OK\r\nServer: MyPoorWebServer\r\nContent-Type: text/html\r\nContent-Length: %zu\r\n\r\n", filesize);
+        "HTTP/1.1 200 OK\r\nServer: MyPoorWebServer\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: %zu\r\n\r\n", filesize);
     send(client_socket, headbuf.data(), strlen(headbuf.data()), 0);
 
-    while (ifile) {
+    while (!ifile.eof()) {
         ifile.read(buffer.data(), buffer.size());
         streamsize count = ifile.gcount();
         if (count > 0) {
@@ -173,9 +306,13 @@ void* accept_request(int client_socket) {
             path = url.substr(0, pos);
         }
 		else {
-            path = url;
+			path = url;
 		}
     }
+	else if(strcasecmp(method.data(), "POST") == 0) {
+		path = url; // POST请求直接使用url作为路径
+	}
+
 
 	cout << "method: " << method << " url: " << url << " query: " << query;
 
@@ -189,7 +326,11 @@ void* accept_request(int client_socket) {
 	if(!cgi) {
 		open_file(client_socket, path);
 	}
+	else {
+	    exec_cgi(client_socket, method, path, query);
+	}
 
+	shutdown(client_socket, SHUT_WR); // 告诉客户端数据已发完
     close(client_socket);
 	cout << "connection close....client: " << client_socket << endl;
     return NULL;

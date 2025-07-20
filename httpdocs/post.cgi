@@ -7,7 +7,7 @@ import sys,os
 # 导入必要模块：
 # sys - 用于读取标准输入
 # os - 用于获取环境变量
-import urllib
+import urllib.parse
 # 从环境变量获取POST数据长度
 # 这是服务器通过CGI协议传递的关键参数
 length = os.getenv('CONTENT_LENGTH')
@@ -17,6 +17,7 @@ if length:
     # 读取指定长度的POST数据（从标准输入）
     # 标准输入已被服务器重定向自cgi_input管道
     postdata = sys.stdin.read(int(length))
+    decoded = urllib.parse.unquote_plus(postdata)
     # 输出HTTP响应头（必须以空行结束）
     # 这是CGI协议要求的响应格式
     # 输出HTTP响应头
@@ -24,15 +25,17 @@ if length:
     # 生成HTML响应体
     print('<html>') 
     print('<head>') 
+    print('<meta charset="UTF-8">')
     print('<title>POST</title>') 
     print('</head>') 
     print('<body>') 
     print('<h2> Your POST data: </h2>')
     print('<ul>')
     # 解析POST数据（格式：key1=value1&key2=value2）
-    for data in postdata.split('&'):
+    for data in decoded.split('&'):
         print('<li>' + data + '</li>')
     print('</ul>')
+    print('<button onclick="location.href=\'index.html\'">返回主页</button>')
     print('</body>')
     print('</html>')
 
