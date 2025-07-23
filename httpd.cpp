@@ -238,8 +238,66 @@ void exec_cgi(int client_socket, const string& method, const string& _path, cons
 	}
 }
 
+string get_mine_type(const string& filename) {
+	string ext;
+	size_t pos = filename.find_last_of('.');
+	if (pos != string::npos) {
+		ext = filename.substr(pos);
+		// 统一转换为小写
+        for (char& c : ext) {
+            c = tolower(c);
+        }
+	}
+	if (ext == ".html" || ext == ".htm") return "text/html; charset=UTF-8";
+    else if (ext == ".jpg" || ext == ".jpeg") return "image/jpeg";
+    else if (ext == ".png") return "image/png";
+    else if (ext == ".gif") return "image/gif";
+    else if (ext == ".pdf") return "application/pdf";
+    else if (ext == ".doc") return "application/msword";
+    else if (ext == ".docx") return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    else if (ext == ".zip") return "application/zip";
+    else if (ext == ".txt") return "text/plain; charset=UTF-8";
+    else if (ext == ".mp4") return "video/mp4";
+    else if (ext == ".mp3") return "audio/mpeg";
+    else if (ext == ".css") return "text/css";
+    else if (ext == ".js") return "application/javascript";
+    else return "application/octet-stream"; // 默认二进制下载
+}
+
+void open_usr_file(int& client_socket, const string& filename) {
+	string fullpath = "httpdocs" + filename;
+	vector<char> buffer(4096);
+	ifstream ifile(fullpath.data(), ios::binary);
+	if (!ifile) {
+		not_found(client_socket);
+		return;
+	}
+
+	// 获取文件大小
+	ifile.seekg(0, ios::end);
+	size_t filesize = ifile.tellg();
+	ifile.seekg(0, ios::beg);
+
+	// 发送带 Content-Length 的 header，1.1协议特色
+    vector<char> headbuf(256);
+    snprintf(headbuf.data(), headbuf.size(),
+        "HTTP/1.1 200 OK\r\n"
+		"Server: MyPoorWebServer\r\n"
+		"Content-Type: %s; charset=UTF-8\r\n"
+		"Content-Length: %zu\r\n\r\n", get_mine_type(fullpath).data(), filesize);
+    send(client_socket, headbuf.data(), strlen(headbuf.data()), 0);
+
+    while (!ifile.eof()) {
+        ifile.read(buffer.data(), buffer.size());
+        streamsize count = ifile.gcount();
+        if (count > 0) {
+            send(client_socket, buffer.data(), count, 0);
+        }
+    }
+}
+
 // 打开文件并发送内容，自带请求头
-void open_file(int& client_socket, const string& filename) {
+void open_http_file(int& client_socket, const string& filename) {
     string fullpath = "httpdocs" + filename;
     ifstream ifile(fullpath.data(), ios::binary);
     vector<char> buffer(4096);
@@ -254,7 +312,10 @@ void open_file(int& client_socket, const string& filename) {
     // 发送带 Content-Length 的 header，1.1协议特色
     vector<char> headbuf(256);
     snprintf(headbuf.data(), headbuf.size(),
-        "HTTP/1.1 200 OK\r\nServer: MyPoorWebServer\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: %zu\r\n\r\n", filesize);
+        "HTTP/1.1 200 OK\r\n"
+		"Server: MyPoorWebServer\r\n"
+		"Content-Type: text/html; charset=UTF-8\r\n"
+		"Content-Length: %zu\r\n\r\n", filesize);
     send(client_socket, headbuf.data(), strlen(headbuf.data()), 0);
 
     while (!ifile.eof()) {
@@ -324,7 +385,7 @@ void* accept_request(int client_socket) {
 	cout << " path: " << path << endl;
 
 	if(!cgi) {
-		open_file(client_socket, path);
+		open_usr_file(client_socket, path);
 	}
 	else {
 	    exec_cgi(client_socket, method, path, query);
