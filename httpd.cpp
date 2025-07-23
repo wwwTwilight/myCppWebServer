@@ -22,6 +22,7 @@
 #include <cstdlib>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <ctime>
 using namespace std;
 
 void error_exit(const string& message) {
@@ -33,6 +34,7 @@ void error_message(const string& message) {
 	cout << "Error: " << message << endl;
 }
 
+// 发送方法不支持的信息
 void method_not_supported(int client_socket) {
     vector<char> buffer(1024);
 
@@ -105,6 +107,7 @@ void header(int client_socket) {
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
 }
 
+// 发送404 Not Found响应
 void not_found(int client_socket) {
     vector<char> buffer(1024);
 
@@ -132,6 +135,7 @@ void not_found(int client_socket) {
 	cout << "client: " << client_socket << " 404 Not Found" << endl;
 }
 
+// 执行CGI脚本
 void exec_cgi(int client_socket, const string& method, const string& _path, const string& query) {
 	string buffer;
 
@@ -167,17 +171,9 @@ void exec_cgi(int client_socket, const string& method, const string& _path, cons
 		}
 	}
 
-	snprintf(buffer.data(), buffer.size(), "HTTP/1.1 200 OK\r\n");
-	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
-
-	if (pipe(cgi_output) < 0) {
-		error_message("pipe error");
-		return;
-	}
-	if (pipe(cgi_input) < 0) {
-		error_message("pipe error");
-		return;
-	}
+	vector<char> headbuf(256);
+	snprintf(headbuf.data(), headbuf.size(), "HTTP/1.1 200 OK\r\n");
+	send(client_socket, headbuf.data(), strlen(headbuf.data()), 0);
 
 	int pid = fork();
 	if (pid < 0) {
@@ -238,6 +234,7 @@ void exec_cgi(int client_socket, const string& method, const string& _path, cons
 	}
 }
 
+// 获取文件的MIME类型，用于发送正确的Content-Type头
 string get_mine_type(const string& filename) {
 	string ext;
 	size_t pos = filename.find_last_of('.');
@@ -264,38 +261,6 @@ string get_mine_type(const string& filename) {
     else return "application/octet-stream"; // 默认二进制下载
 }
 
-void open_usr_file(int& client_socket, const string& filename) {
-	string fullpath = "httpdocs" + filename;
-	vector<char> buffer(4096);
-	ifstream ifile(fullpath.data(), ios::binary);
-	if (!ifile) {
-		not_found(client_socket);
-		return;
-	}
-
-	// 获取文件大小
-	ifile.seekg(0, ios::end);
-	size_t filesize = ifile.tellg();
-	ifile.seekg(0, ios::beg);
-
-	// 发送带 Content-Length 的 header，1.1协议特色
-    vector<char> headbuf(256);
-    snprintf(headbuf.data(), headbuf.size(),
-        "HTTP/1.1 200 OK\r\n"
-		"Server: MyPoorWebServer\r\n"
-		"Content-Type: %s; charset=UTF-8\r\n"
-		"Content-Length: %zu\r\n\r\n", get_mine_type(fullpath).data(), filesize);
-    send(client_socket, headbuf.data(), strlen(headbuf.data()), 0);
-
-    while (!ifile.eof()) {
-        ifile.read(buffer.data(), buffer.size());
-        streamsize count = ifile.gcount();
-        if (count > 0) {
-            send(client_socket, buffer.data(), count, 0);
-        }
-    }
-}
-
 // 打开文件并发送内容，自带请求头
 void open_http_file(int& client_socket, const string& filename) {
     string fullpath = "httpdocs" + filename;
@@ -309,13 +274,15 @@ void open_http_file(int& client_socket, const string& filename) {
     size_t filesize = ifile.tellg();
     ifile.seekg(0, ios::beg);
 
+	string mime_type = get_mine_type(fullpath);
+
     // 发送带 Content-Length 的 header，1.1协议特色
     vector<char> headbuf(256);
     snprintf(headbuf.data(), headbuf.size(),
         "HTTP/1.1 200 OK\r\n"
 		"Server: MyPoorWebServer\r\n"
-		"Content-Type: text/html; charset=UTF-8\r\n"
-		"Content-Length: %zu\r\n\r\n", filesize);
+		"Content-Type: %s; charset=UTF-8\r\n"
+		"Content-Length: %zu\r\n\r\n", mime_type.data(), filesize);
     send(client_socket, headbuf.data(), strlen(headbuf.data()), 0);
 
     while (!ifile.eof()) {
@@ -384,8 +351,10 @@ void* accept_request(int client_socket) {
 
 	cout << " path: " << path << endl;
 
+	// 身份验证
+
 	if(!cgi) {
-		open_usr_file(client_socket, path);
+		open_http_file(client_socket, path);
 	}
 	else {
 	    exec_cgi(client_socket, method, path, query);
