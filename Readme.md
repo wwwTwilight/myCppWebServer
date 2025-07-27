@@ -1,79 +1,76 @@
 # MyCppWebServer
 
-这是一个用 C++ 编写的简单 Web 服务器项目，主要用于学习和理解 Web 服务器的基本实现原理。项目目前采用过程式编程风格，后续会考虑用面向对象思想进行重构。
+这是一个用 C++ 编写的简易多线程 Web 服务器项目，支持静态文件服务和 CGI 脚本，适合学习 Web 服务器原理、Socket 编程和 C++ 面向对象设计。
 
-## 功能简介
+## 主要特性
 
-- 支持 HTTP/1.0 和 HTTP/1.1 协议的基础请求处理
-- 支持 GET 和 POST 请求
-- 支持静态文件访问（如 HTML、PDF、JPG、PNG、DOC 等常见文件类型）
-- 支持 CGI 脚本执行
-- 多线程处理客户端连接
-- 简单的错误处理（404、501）
+- 支持 HTTP/1.0 和 HTTP/1.1 协议
+- 支持 GET、POST 请求
+- 静态文件服务（HTML、图片、PDF、文档等常见类型）
+- CGI 脚本执行（如 Python、Shell 等）
+- 多线程并发处理客户端连接
+- 基础错误处理（404、501）
+- 代码包含过程式和面向对象两种实现风格，便于对比学习
 
 ## 目录结构
 
 ```
-MyCppWebServer/
-├── myCppWebServer/
-│   ├── httpd.cpp      # 主程序源码
-│   └── httpdocs/      # 静态资源目录，放置网页和文件
+myCppWebServer/
+├── httpd.cpp           # 过程式实现的主程序
+├── httpd_oop.cpp       # 面向对象实现（完整注释版）
+├── httpdocs/           # 静态资源与CGI脚本目录
+│   ├── index.html      # 示例首页
+│   ├── post.html       # 表单页面
+│   ├── post.cgi        # CGI脚本示例（需可执行权限）
+│   └── ...             # 其他静态文件和脚本
+├── plan.md             # 项目未来改进规划
+└── Readme.md           # 项目说明文档
 ```
 
-## 使用方法
+## 编译与运行
 
-1. **编译项目**
+1. **编译（任选其一）**
 
-   在项目根目录下执行：
-
-   ```bash
-   g++ -std=c++11 -pthread myCppWebServer/httpd.cpp -o myCppWebServer/httpd
-   ```
+   - 过程式版本：
+     ```bash
+     g++ -std=c++11 -pthread httpd.cpp -o httpd
+     ```
+   - 面向对象版本：
+     ```bash
+     g++ -std=c++11 -pthread httpd_oop.cpp -o httpd_oop
+     ```
 
 2. **运行服务器**
-
    ```bash
-   ./myCppWebServer/httpd
+   ./httpd         # 或 ./httpd_oop
    ```
-
    默认监听 8080 端口。
 
-3. **访问网页或文件**
-
-   将你的 HTML、图片、PDF、文档等文件放到 `httpdocs` 目录下，通过浏览器访问：
-
-   ```
-   http://localhost:8080/文件名
-   ```
-
-   例如：
-
-   ```
-   http://localhost:8080/index.html
-   ```
+3. **访问服务**
+   - 浏览器访问：http://localhost:8080/index.html
+   - 也可访问其他静态文件或 CGI 脚本
 
 ## 主要代码说明
 
-- `accept_request`：处理每个客户端连接，解析请求并响应
-- `open_file`：读取并发送静态文件内容
-- `exec_cgi`：执行 CGI 脚本并返回结果
-- `not_found`、`method_not_supported`：错误响应处理
-- `getHttpLine`：读取 HTTP 请求行
+- `httpd.cpp`：单文件过程式实现，适合入门理解
+- `httpd_oop.cpp`：面向对象实现，结构清晰，便于扩展
+- `httpdocs/`：存放网页、图片、CGI脚本等资源
+- `plan.md`：未来模块化、Makefile、请求头解析等改进计划
 
 ## 注意事项
 
-- 仅支持基础的 HTTP 功能，安全性和性能未做优化
-- 静态文件需放在 `httpdocs` 目录下
-- 仅支持 GET/POST，其他方法会返回 501 错误
+- CGI 脚本需有可执行权限（如 `chmod +x post.cgi`）
+- 静态文件和脚本需放在 `httpdocs/` 目录下
+- 仅支持基础 HTTP 功能，安全性和健壮性未做深入优化
 - 仅适合学习和实验，不建议用于生产环境
 
-## 后续计划
+## 未来规划
 
-- 用面向对象方式重构
-- 增加更多 MIME 类型支持
-- 支持更复杂的 CGI 和路由
-- 增强错误处理和日志功能
+详见 `plan.md`，包括：
+- 代码模块化与头文件分离
+- Makefile 自动化编译
+- 更健壮的请求头解析与 Cookie 支持
 
 ---
 
-欢迎学习和交流！
+欢迎学习、交流与改进建议！

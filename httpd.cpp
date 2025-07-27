@@ -351,8 +351,6 @@ void* accept_request(int client_socket) {
 
 	cout << " path: " << path << endl;
 
-	// 身份验证
-
 	if(!cgi) {
 		open_http_file(client_socket, path);
 	}
