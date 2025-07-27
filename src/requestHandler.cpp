@@ -1,139 +1,26 @@
-// 写在前面，虽然是使用cpp重写，但是并没有使用面向对象的思想，毕竟这一份主要在于理解webserver在cpp中的实现，后面会使用面向对象的思想来重写
+#include "../include/requestHandler.h"
+#include "../include/utils.h"
+#include "../include/webserverSet.h"
+#include "../include/error.h"
 #include <iostream>
-#include <string>
-#include <vector>
-#include <memory>
-#include <mutex>
-#include <thread>
-#include <fstream>
-#include <sstream>
-#include <stdexcept>
-#include <cstdint>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <pthread.h>
-#include <cctype>
 #include <cstring>
-#include <cstdio>
-#include <cstdlib>
+#include <unistd.h>
+#include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <ctime>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <string>
+#include <vector>
+#include <sstream>
+#include <fstream>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <cctype>
+#include <cstdio>
+#include <cstdlib>
+
 using namespace std;
-
-void error_exit(const string& message) {
-    cerr << message << endl;
-    exit(0);
-}
-
-void error_message(const string& message) {
-	cout << "Error: " << message << endl;
-}
-
-// 发送方法不支持的信息
-void method_not_supported(int client_socket) {
-    vector<char> buffer(1024);
-
-	snprintf(buffer.data(), buffer.size(), "HTTP/1.0 501 Not Implemented\r\n");
-	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
-
-	snprintf(buffer.data(), buffer.size(), "Server: MyPoorWebServer\r\n");
-	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
-
-	snprintf(buffer.data(), buffer.size(), "Content-Type: text/html\r\n");
-	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
-
-	snprintf(buffer.data(), buffer.size(), "charset=UTF-8\r\n"); // 有中文，需要设置字符集，确保别的浏览器能正确显示
-	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
-
-	snprintf(buffer.data(), buffer.size(), "\r\n");
-	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
-
-	snprintf(buffer.data(), buffer.size(), "<html><hea><title>Method Not Implemented</title></head>\r\n");
-	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
-
-	snprintf(buffer.data(), buffer.size(), "<body><p>HTTP request method not supported.</p></body></html>\r\n");
-	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
-
-	cout << "client: " << client_socket << " 501 Method Not Implemented" << endl;
-}
-
-// 获取一行HTTP报文，存放在buffer中，返回读取的字符数
-int getHttpLine(int client_socket, string& buffer) {
-    buffer.clear();
-    char c = '\0';
-    int n = 0;
-    while (c != '\n') {
-        n = recv(client_socket, &c, 1, 0);
-        if (n > 0) {
-            if (c == '\r') {
-                char next;
-                n = recv(client_socket, &next, 1, MSG_PEEK);
-                if (n > 0 && next == '\n') {
-                    recv(client_socket, &c, 1, 0);
-                } else {
-                    c = '\n';
-                }
-            }
-            buffer += c;
-        } else {
-            c = '\n';
-        }
-    }
-    return buffer.size();
-}
-
-// 发送HTTP1.0请求头
-void header(int client_socket) {
-	vector<char> buffer(1024);
-
-	snprintf(buffer.data(), buffer.size(), "HTTP/1.0 200 OK\r\n");
-	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
-
-	snprintf(buffer.data(), buffer.size(), "Server: MyPoorWebServer\r\n");
-	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
-
-	snprintf(buffer.data(), buffer.size(), "Content-Type: text/html\r\n");
-	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
-
-	snprintf(buffer.data(), buffer.size(), "charset=UTF-8\r\n");
-	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
-
-	snprintf(buffer.data(), buffer.size(), "\r\n");
-	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
-}
-
-// 发送404 Not Found响应
-void not_found(int client_socket) {
-    vector<char> buffer(1024);
-
-	snprintf(buffer.data(), buffer.size(), "HTTP/1.0 404 Not Found\r\n");
-	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
-
-	snprintf(buffer.data(), buffer.size(), "Server: MyPoorWebServer\r\n");
-	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
-
-	snprintf(buffer.data(), buffer.size(), "Content-Type: text/html\r\n");
-	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
-
-	snprintf(buffer.data(), buffer.size(), "charset=UTF-8\r\n");
-	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
-
-	snprintf(buffer.data(), buffer.size(), "\r\n");
-	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
-
-	snprintf(buffer.data(), buffer.size(), "<html><head><title>Not Found</title></head>\r\n");
-	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
-
-	snprintf(buffer.data(), buffer.size(), "<body><p>HTTP request file not found.</p></body></html>\r\n");
-	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
-
-	cout << "client: " << client_socket << " 404 Not Found" << endl;
-}
 
 // 执行CGI脚本
 void exec_cgi(int client_socket, const string& method, const string& _path, const string& query) {
@@ -362,59 +249,4 @@ void* accept_request(int client_socket) {
     close(client_socket);
 	cout << "connection close....client: " << client_socket << endl;
     return NULL;
-}
-
-int startServer(unsigned short& port) {
-    if (port == 0) {
-        port = 8080;
-    }
-    int server_socket = socket(AF_INET, SOCK_STREAM, 0);
-    sockaddr_in name;
-    socklen_t name_len = sizeof(name);
-    memset(&name, 0, sizeof(name));
-    name.sin_family = AF_INET;
-    name.sin_port = htons(port);
-    name.sin_addr.s_addr = htonl(INADDR_ANY);
-
-    int opt = 1;
-    if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
-        error_exit("setsockopt error");
-    }
-
-    if (::bind(server_socket, (sockaddr*)&name, name_len) < 0) {
-        error_exit("bind error");
-    }
-
-    if (listen(server_socket, 10) < 0) {
-        error_exit("listen error");
-    }
-
-    cout << "server start on socket " << server_socket << endl;
-    cout << "server start on address " << inet_ntoa(name.sin_addr) << endl;
-    cout << "server start on port " << port << endl;
-
-    return server_socket;
-}
-
-int main() {
-    int server_socket = -1;
-    unsigned short port = 8080;
-    int client_socket = -1;
-    sockaddr_in client_name;
-    socklen_t client_name_len = sizeof(client_name);
-
-    server_socket = startServer(port);
-
-    while (1) {
-        client_socket = accept(server_socket, (sockaddr*)&client_name, &client_name_len);
-
-        cout << "New connection from ip:" << inet_ntoa(client_name.sin_addr) << " and port:" << ntohs(client_name.sin_port) << endl;
-        if (client_socket < 0) {
-            error_exit("accept error");
-        }
-        thread new_thread(accept_request, client_socket);
-        new_thread.detach();
-    }
-
-    return 0;
 }
