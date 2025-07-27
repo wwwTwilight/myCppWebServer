@@ -11,7 +11,7 @@ all : $(TARGET)
 $(TARGET): $(OBJECTS)
 	@echo "链接生成可执行文件: $(TARGET)"
 	$(CXX) $(OBJECTS) -o $(TARGET) $(CXXFLAGS)
-	@echo "编译完成！运行 ./$(TARGET) 来执行程序"
+	@echo "编译完成！运行 ./$(TARGET) 或 make run 来执行程序"
 
 %.o: %.cpp
 	@echo "编译 $< -> $@"

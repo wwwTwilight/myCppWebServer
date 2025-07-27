@@ -2,6 +2,7 @@
 #include "../include/utils.h"
 #include "../include/webserverSet.h"
 #include "../include/error.h"
+#include "../include/httpMes.h"
 #include <iostream>
 #include <cstring>
 #include <unistd.h>
@@ -23,33 +24,30 @@
 using namespace std;
 
 // 执行CGI脚本
-void exec_cgi(int client_socket, const string& method, const string& _path, const string& query) {
+void exec_cgi(int client_socket, const HttpMessage& http_message) {
+	
 	string buffer;
 
-	string path = "httpdocs" + _path;
+	string path = "httpdocs" + http_message.path;
 
 	int cgi_input[2];
 	int cgi_output[2];
 
-	int n = 1;
 	int content_length = -1;
 	if (pipe(cgi_input) < 0 || pipe(cgi_output) < 0) {
 		error_message("pipe error");
 		return;
 	}
 
-	if(strcasecmp(method.data(), "GET") == 0) {
-		while(n > 0 && strcmp(buffer.data(), "\n") != 0) { // 目前还没有处理GET请求的query，先空着
-			n = getHttpLine(client_socket, buffer);
-		}
+	if(strcasecmp(http_message.method.data(), "GET") == 0) {
+
 	}
 	else {
-		n = getHttpLine(client_socket, buffer);
-		while((n > 0) && (strcmp(buffer.data(), "\n"))) {
-			if (strcasecmp(buffer.substr(0, 15).data(), "Content-Length:") == 0) {
-				content_length = atoi(buffer.substr(strlen("Content-Length:")).data());
+		for(auto & header : http_message.headers) {
+			if(strcasecmp(header.first.data(), "Content-Length") == 0) {
+				content_length = stoi(header.second);
+				break;
 			}
-			n = getHttpLine(client_socket, buffer);
 		}
 
 		if (content_length < 0) {
@@ -72,12 +70,12 @@ void exec_cgi(int client_socket, const string& method, const string& _path, cons
 		dup2(cgi_output[1], STDOUT_FILENO);
 		close(cgi_input[1]);
 		close(cgi_output[0]);
-		
-		static string method_env = "REQUEST_METHOD=" + method;
+
+		static string method_env = "REQUEST_METHOD=" + http_message.method;
 		putenv(method_env.data());
 
-		if(strcasecmp(method.data(), "GET") == 0) {
-			static string query_env = "QUERY_STRING=" + query;
+		if(strcasecmp(http_message.method.data(), "GET") == 0) {
+			static string query_env = "QUERY_STRING=" + http_message.query;
 			putenv(query_env.data());
 		}
 		else {
@@ -101,7 +99,7 @@ void exec_cgi(int client_socket, const string& method, const string& _path, cons
 		close(cgi_input[0]);
 		close(cgi_output[1]);
 
-		if (strcasecmp(method.data(), "POST") == 0) {
+		if (strcasecmp(http_message.method.data(), "POST") == 0) {
 			for(int i = 0; i < content_length; i++) {
 				char c;
 				recv(client_socket, &c, 1, 0);
@@ -122,7 +120,7 @@ void exec_cgi(int client_socket, const string& method, const string& _path, cons
 }
 
 // 获取文件的MIME类型，用于发送正确的Content-Type头
-string get_mine_type(const string& filename) {
+string get_mime_type(const string& filename) {
 	string ext;
 	size_t pos = filename.find_last_of('.');
 	if (pos != string::npos) {
@@ -149,8 +147,8 @@ string get_mine_type(const string& filename) {
 }
 
 // 打开文件并发送内容，自带请求头
-void open_http_file(int& client_socket, const string& filename) {
-    string fullpath = "httpdocs" + filename;
+void open_http_file(int& client_socket, const HttpMessage& http_message) {
+	string fullpath = "httpdocs" + http_message.path;
     ifstream ifile(fullpath.data(), ios::binary);
     vector<char> buffer(4096);
     if (!ifile) {
@@ -161,14 +159,14 @@ void open_http_file(int& client_socket, const string& filename) {
     size_t filesize = ifile.tellg();
     ifile.seekg(0, ios::beg);
 
-	string mime_type = get_mine_type(fullpath);
+	string mime_type = get_mime_type(fullpath);
 
     // 发送带 Content-Length 的 header，1.1协议特色
-    vector<char> headbuf(256);
+    vector<char> headbuf(512);
     snprintf(headbuf.data(), headbuf.size(),
         "HTTP/1.1 200 OK\r\n"
 		"Server: MyPoorWebServer\r\n"
-		"Content-Type: %s; charset=UTF-8\r\n"
+		"Content-Type: %s\r\n"
 		"Content-Length: %zu\r\n\r\n", mime_type.data(), filesize);
     send(client_socket, headbuf.data(), strlen(headbuf.data()), 0);
 
@@ -228,21 +226,19 @@ void* accept_request(int client_socket) {
 		path = url; // POST请求直接使用url作为路径
 	}
 
-
-	cout << "method: " << method << " url: " << url << " query: " << query;
-
 	if (path[path.size() - 1] == '/') // 判断请求的是不是目录，如果是，就拼接上默认的文件名
 	{
 		path += "index.html";
 	}
 
-	cout << " path: " << path << endl;
+	HttpMessage http_message(client_socket, method, url, query, path);
+	cout << "method: " << method << " url: " << url << " query: " << query << " path: " << path << endl;
 
 	if(!cgi) {
-		open_http_file(client_socket, path);
+		open_http_file(client_socket, http_message);
 	}
 	else {
-	    exec_cgi(client_socket, method, path, query);
+	    exec_cgi(client_socket, http_message);
 	}
 
 	shutdown(client_socket, SHUT_WR); // 告诉客户端数据已发完
