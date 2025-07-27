@@ -38,6 +38,8 @@ public:
     bool parse(int client_socket) {
         string line;
         if (!read_line(client_socket, line)) return false;
+        istringstream iss(line);
+        iss >> method >> url;
         size_t pos = url.find('?');
         if (pos != string::npos) {
             query = url.substr(pos + 1);
@@ -45,9 +47,9 @@ public:
         } else {
             path = url;
         }
-        if (path[path.size() - 1] == '/') path += "index.html";
+        if (path.back() == '/') path += "index.html";
         parse_headers(client_socket);
-        if (strcasecmp(method.data(), "POST") == 0) {
+        if (strcasecmp(method.c_str(), "POST") == 0) {
             is_cgi = true;
             if (headers.count("Content-Length")) {
                 content_length = stoi(headers["Content-Length"]);

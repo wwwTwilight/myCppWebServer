@@ -35,7 +35,7 @@ myCppWebServer/
      ```bash
      g++ -std=c++11 -pthread httpd.cpp -o httpd
      ```
-   - 面向对象版本：
+   - 面向对象版本（此版本为AI根据过程式版本改写）：
      ```bash
      g++ -std=c++11 -pthread httpd_oop.cpp -o httpd_oop
      ```
