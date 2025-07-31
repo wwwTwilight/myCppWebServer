@@ -1,38 +1,120 @@
+<!DOCTYPE html>
 <html>
 	<head>
-	<link rel="icon" href="data:;base64,=">
-		<title>注册信息</title>
+		<link rel="icon" href="data:;base64,=">
+		<title>用户登录</title>
 		<meta charset="utf-8">
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				height: 100vh;
+				margin: 0;
+			}
+			.login-container {
+				background: white;
+				padding: 40px;
+				border-radius: 10px;
+				box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+				width: 350px;
+			}
+			h2 {
+				text-align: center;
+				color: #333;
+				margin-bottom: 30px;
+			}
+			.form-group {
+				margin-bottom: 20px;
+			}
+			label {
+				display: block;
+				margin-bottom: 5px;
+				color: #555;
+				font-weight: bold;
+			}
+			input[type="text"], input[type="password"] {
+				width: 100%;
+				padding: 12px;
+				border: 2px solid #ddd;
+				border-radius: 5px;
+				font-size: 16px;
+				box-sizing: border-box;
+				transition: border-color 0.3s;
+			}
+			input[type="text"]:focus, input[type="password"]:focus {
+				outline: none;
+				border-color: #667eea;
+			}
+			.checkbox-group {
+				display: flex;
+				align-items: center;
+				margin-bottom: 20px;
+			}
+			.checkbox-group input {
+				margin-right: 8px;
+			}
+			.button-group {
+				display: flex;
+				gap: 10px;
+			}
+			input[type="submit"], input[type="reset"] {
+				flex: 1;
+				padding: 12px;
+				border: none;
+				border-radius: 5px;
+				font-size: 16px;
+				cursor: pointer;
+				transition: background-color 0.3s;
+			}
+			input[type="submit"] {
+				background: #667eea;
+				color: white;
+			}
+			input[type="submit"]:hover {
+				background: #5a6fd8;
+			}
+			input[type="reset"] {
+				background: #f0f0f0;
+				color: #333;
+			}
+			input[type="reset"]:hover {
+				background: #e0e0e0;
+			}
+			.links {
+				text-align: center;
+				margin-top: 20px;
+			}
+			.links a {
+				color: #667eea;
+				text-decoration: none;
+			}
+			.links a:hover {
+				text-decoration: underline;
+			}
+		</style>
 	</head>
 	<body>
-		<form action="post.cgi" method="POST">
-			账号：<input type="text" name="user" value="" size="10" maxlength="5">
-			<br>
-			<br>
-			密码：<input type="password" value="" name="password" size="10">
-			<br>
-			<br>
-			爱好：<input type="checkbox" name="tiyu" checked="checked">体育<input type="checkbox" name="singing">唱歌
-			<br>
-			<br>
-			性别：<input type="radio" name="sex" checked="checked">男<input type="radio" name="sex">女
-			<br>
-			<br>
-			自我介绍：<br>
-			<textarea cols="35" rows="10" name="introduction"></textarea>
-			<br>
-			<br>
-			地址：
-			<select name="address">
-				<option value="beijing">北京</option>
-				<option value="sichuang">四川</option>
-				<option value="shanghai">上海</option>
-				<option value="wuhan">武汉</option>
-			</select>
-			<br>
-			<br>
-			<input type="submit" value="提交">
-			<input type="reset" value="重置">
-		</form>
+		<div class="login-container">
+			<h2>🔐 用户登录</h2>
+			<form action="post.cgi" method="POST">
+				<div class="form-group">
+					<label for="username">用户名：</label>
+					<input type="text" id="username" name="username" required maxlength="20" placeholder="请输入用户名">
+				</div>
+				
+				<div class="form-group">
+					<label for="password">密码：</label>
+					<input type="password" id="password" name="password" required placeholder="请输入密码">
+				</div>
+				
+				<div class="button-group">
+					<input type="submit" value="登录">
+					<input type="reset" value="重置">
+				</div>
+			</form>
+		</div>
 	</body>
 </html>

@@ -16,6 +16,7 @@ void HttpMessage::requestHead() {
             headers[key] = value;
         }
     }
+    cookie = new Cookie(headers["Cookie"]);
 }
 
 // 处理请求体
@@ -37,6 +38,7 @@ HttpMessage::HttpMessage(int client_socket, string method, string url, string qu
     this->url = url;
     this->query = query;
     this->path = path;
+    this->cookie = nullptr;
     requestHead(); // 处理请求头
     requestBody(); // 处理请求体
 }

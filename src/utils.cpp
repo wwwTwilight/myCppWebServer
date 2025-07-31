@@ -4,6 +4,8 @@
 #include <cstring>
 #include <iostream>
 #include <vector>
+#include <cstdio>
+#include <ctime>
 
 // 发送HTTP1.0请求头
 void header(int client_socket) {
@@ -48,4 +50,36 @@ int getHttpLine(int client_socket, string& buffer) {
         }
     }
     return buffer.size();
+}
+
+// 获取当前时间的时间戳
+int getTime() {
+    return time(nullptr);
+}
+
+// 获取文件的MIME类型，用于发送正确的Content-Type头
+string get_mime_type(const string& filename) {
+	string ext;
+	size_t pos = filename.find_last_of('.');
+	if (pos != string::npos) {
+		ext = filename.substr(pos);
+		// 统一转换为小写
+        for (char& c : ext) {
+            c = tolower(c);
+        }
+	}
+	if (ext == ".html" || ext == ".htm") return "text/html; charset=UTF-8";
+    else if (ext == ".jpg" || ext == ".jpeg") return "image/jpeg";
+    else if (ext == ".png") return "image/png";
+    else if (ext == ".gif") return "image/gif";
+    else if (ext == ".pdf") return "application/pdf";
+    else if (ext == ".doc") return "application/msword";
+    else if (ext == ".docx") return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    else if (ext == ".zip") return "application/zip";
+    else if (ext == ".txt") return "text/plain; charset=UTF-8";
+    else if (ext == ".mp4") return "video/mp4";
+    else if (ext == ".mp3") return "audio/mpeg";
+    else if (ext == ".css") return "text/css";
+    else if (ext == ".js") return "application/javascript";
+    else return "application/octet-stream"; // 默认二进制下载
 }

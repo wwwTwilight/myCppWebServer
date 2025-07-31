@@ -5,6 +5,7 @@
 #include <map>
 #include <vector>
 #include <unordered_map>
+#include "cookie.h"
 
 using namespace std;
 
@@ -14,6 +15,7 @@ public:
     string method, url, query, path; // 请求方法、URL、查询字符串和路径
     unordered_map<string, string> headers; // 请求头
     string body; // 请求体
+    Cookie* cookie; // Cookie对象
 
     HttpMessage(int client_socket, string method, string url, string query, string path);
 

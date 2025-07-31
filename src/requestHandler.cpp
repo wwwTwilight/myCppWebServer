@@ -24,8 +24,8 @@
 using namespace std;
 
 // 执行CGI脚本
-void exec_cgi(int client_socket, const HttpMessage& http_message) {
-	
+void exec_cgi(const HttpMessage& http_message) {
+	int client_socket = http_message.client_socket;
 	string buffer;
 
 	string path = "httpdocs" + http_message.path;
@@ -119,35 +119,9 @@ void exec_cgi(int client_socket, const HttpMessage& http_message) {
 	}
 }
 
-// 获取文件的MIME类型，用于发送正确的Content-Type头
-string get_mime_type(const string& filename) {
-	string ext;
-	size_t pos = filename.find_last_of('.');
-	if (pos != string::npos) {
-		ext = filename.substr(pos);
-		// 统一转换为小写
-        for (char& c : ext) {
-            c = tolower(c);
-        }
-	}
-	if (ext == ".html" || ext == ".htm") return "text/html; charset=UTF-8";
-    else if (ext == ".jpg" || ext == ".jpeg") return "image/jpeg";
-    else if (ext == ".png") return "image/png";
-    else if (ext == ".gif") return "image/gif";
-    else if (ext == ".pdf") return "application/pdf";
-    else if (ext == ".doc") return "application/msword";
-    else if (ext == ".docx") return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-    else if (ext == ".zip") return "application/zip";
-    else if (ext == ".txt") return "text/plain; charset=UTF-8";
-    else if (ext == ".mp4") return "video/mp4";
-    else if (ext == ".mp3") return "audio/mpeg";
-    else if (ext == ".css") return "text/css";
-    else if (ext == ".js") return "application/javascript";
-    else return "application/octet-stream"; // 默认二进制下载
-}
-
 // 打开文件并发送内容，自带请求头
-void open_http_file(int& client_socket, const HttpMessage& http_message) {
+void open_http_file(const HttpMessage& http_message) {
+	int client_socket = http_message.client_socket;
 	string fullpath = "httpdocs" + http_message.path;
     ifstream ifile(fullpath.data(), ios::binary);
     vector<char> buffer(4096);
@@ -234,11 +208,13 @@ void* accept_request(int client_socket) {
 	HttpMessage http_message(client_socket, method, url, query, path);
 	cout << "method: " << method << " url: " << url << " query: " << query << " path: " << path << endl;
 
+	
+
 	if(!cgi) {
-		open_http_file(client_socket, http_message);
+		open_http_file(http_message);
 	}
 	else {
-	    exec_cgi(client_socket, http_message);
+	    exec_cgi(http_message);
 	}
 
 	shutdown(client_socket, SHUT_WR); // 告诉客户端数据已发完
