@@ -3,7 +3,7 @@ CXXFLAGS = -Wall -Wextra -std=c++20
 
 TARGET = httpd
 
-SOURCES = main.cpp src/cookie.cpp src/error.cpp src/httpMes.cpp src/requestHandler.cpp src/utils.cpp src/webserverSet.cpp
+SOURCES = main.cpp src/route.cpp src/cookie.cpp src/error.cpp src/httpMes.cpp src/requestHandler.cpp src/utils.cpp src/webserverSet.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
 
 all : $(TARGET)

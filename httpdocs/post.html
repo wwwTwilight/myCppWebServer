@@ -1,103 +1,124 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<link rel="icon" href="data:;base64,=">
-		<title>用户登录</title>
-		<meta charset="utf-8">
-		<style>
-			body {
-				font-family: Arial, sans-serif;
-				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-				display: flex;
-				justify-content: center;
-				align-items: center;
-				height: 100vh;
-				margin: 0;
-			}
-			.login-container {
-				background: white;
-				padding: 40px;
-				border-radius: 10px;
-				box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-				width: 350px;
-			}
-			h2 {
-				text-align: center;
-				color: #333;
-				margin-bottom: 30px;
-			}
-			.form-group {
-				margin-bottom: 20px;
-			}
-			label {
-				display: block;
-				margin-bottom: 5px;
-				color: #555;
-				font-weight: bold;
-			}
-			input[type="text"], input[type="password"] {
-				width: 100%;
-				padding: 12px;
-				border: 2px solid #ddd;
-				border-radius: 5px;
-				font-size: 16px;
-				box-sizing: border-box;
-				transition: border-color 0.3s;
-			}
-			input[type="text"]:focus, input[type="password"]:focus {
-				outline: none;
-				border-color: #667eea;
-			}
-			.checkbox-group {
-				display: flex;
-				align-items: center;
-				margin-bottom: 20px;
-			}
-			.checkbox-group input {
-				margin-right: 8px;
-			}
-			.button-group {
-				display: flex;
-				gap: 10px;
-			}
-			input[type="submit"], input[type="reset"] {
-				flex: 1;
-				padding: 12px;
-				border: none;
-				border-radius: 5px;
-				font-size: 16px;
-				cursor: pointer;
-				transition: background-color 0.3s;
-			}
-			input[type="submit"] {
-				background: #667eea;
-				color: white;
-			}
-			input[type="submit"]:hover {
-				background: #5a6fd8;
-			}
-			input[type="reset"] {
-				background: #f0f0f0;
-				color: #333;
-			}
-			input[type="reset"]:hover {
-				background: #e0e0e0;
-			}
-			.links {
-				text-align: center;
-				margin-top: 20px;
-			}
-			.links a {
-				color: #667eea;
-				text-decoration: none;
-			}
-			.links a:hover {
-				text-decoration: underline;
-			}
-		</style>
-	</head>
-	<body>
-		<div class="login-container">
+<head>
+	<link rel="icon" href="data:;base64,=">
+	<title>用户登录</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+	body {
+		min-height: 100vh;
+		margin: 0;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		font-family: 'Segoe UI', 'Arial', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+		background: #f7f7f7;
+	}
+	.login-container {
+		background: #fff;
+		border-radius: 12px;
+		box-shadow: 0 2px 16px 0 rgba(0,0,0,0.06);
+		padding: 36px 28px;
+		min-width: 260px;
+		max-width: 90vw;
+		text-align: center;
+		opacity: 0;
+		transform: translateY(40px);
+		animation: fadeInUp 0.7s cubic-bezier(.23,1.02,.64,1) 0.1s forwards;
+	}
+	h2 {
+		text-align: center;
+		color: #222;
+		margin-bottom: 30px;
+		font-size: 2em;
+		font-weight: 600;
+		letter-spacing: 1px;
+	}
+	.form-group {
+		margin-bottom: 20px;
+	}
+	label {
+		display: block;
+		margin-bottom: 5px;
+		color: #555;
+		font-weight: bold;
+	}
+	input[type="text"], input[type="password"] {
+		width: 100%;
+		padding: 12px;
+		border: 2px solid #ddd;
+		border-radius: 5px;
+		font-size: 16px;
+		box-sizing: border-box;
+		transition: border-color 0.3s;
+	}
+	input[type="text"]:focus, input[type="password"]:focus {
+		outline: none;
+		border-color: #667eea;
+	}
+	.checkbox-group {
+		display: flex;
+		align-items: center;
+		margin-bottom: 20px;
+	}
+	.checkbox-group input {
+		margin-right: 8px;
+	}
+	.button-group {
+		display: flex;
+		gap: 10px;
+	}
+	input[type="submit"], input[type="reset"] {
+		flex: 1;
+		padding: 12px;
+		border: none;
+		border-radius: 5px;
+		font-size: 16px;
+		cursor: pointer;
+		transition: background-color 0.3s;
+	}
+	input[type="submit"] {
+		background: #f2f2f2;
+		color: #333;
+		font-weight: 500;
+	}
+	input[type="submit"]:hover {
+		background: #222;
+		color: #fff;
+	}
+	input[type="reset"] {
+		background: #f0f0f0;
+		color: #333;
+	}
+	input[type="reset"]:hover {
+		background: #e0e0e0;
+	}
+	.links {
+		text-align: center;
+		margin-top: 20px;
+	}
+	.links a {
+		color: #667eea;
+		text-decoration: none;
+	}
+	.links a:hover {
+		text-decoration: underline;
+	}
+	@media (max-width: 500px) {
+		.login-container { padding: 16px 4px; min-width: unset; }
+		h2 { font-size: 1.2em; }
+	}
+	@keyframes fadeInUp {
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+</style>
+</head>
+<body>
+	<div class="login-container">
 			<h2>🔐 用户登录</h2>
 			<form action="post.cgi" method="POST">
 				<div class="form-group">

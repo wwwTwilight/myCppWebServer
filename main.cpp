@@ -6,6 +6,7 @@
 #include "include/webserverSet.h"
 #include "include/webserverSet.h"
 #include "include/requestHandler.h"
+#include "include/route.h"
 
 using namespace std;
 
@@ -17,6 +18,8 @@ int main() {
     socklen_t client_name_len = sizeof(client_name);
 
     server_socket = startServer(port);
+
+    routeInit(); // 初始化路由表
 
     while (1) {
         client_socket = accept(server_socket, (sockaddr*)&client_name, &client_name_len);

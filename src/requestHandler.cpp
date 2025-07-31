@@ -3,6 +3,7 @@
 #include "../include/webserverSet.h"
 #include "../include/error.h"
 #include "../include/httpMes.h"
+#include "../include/route.h"
 #include <iostream>
 #include <cstring>
 #include <unistd.h>
@@ -40,12 +41,12 @@ void exec_cgi(const HttpMessage& http_message) {
 	}
 
 	if(strcasecmp(http_message.method.data(), "GET") == 0) {
-
+        // 处理GET请求
 	}
 	else {
 		for(auto & header : http_message.headers) {
 			if(strcasecmp(header.first.data(), "Content-Length") == 0) {
-				content_length = stoi(header.second);
+				content_length = atoi(header.second.data());
 				break;
 			}
 		}
@@ -101,8 +102,7 @@ void exec_cgi(const HttpMessage& http_message) {
 
 		if (strcasecmp(http_message.method.data(), "POST") == 0) {
 			for(int i = 0; i < content_length; i++) {
-				char c;
-				recv(client_socket, &c, 1, 0);
+				char c = http_message.body[i];
 				write(cgi_input[1], &c, 1);
 				
 			}
@@ -208,14 +208,16 @@ void* accept_request(int client_socket) {
 	HttpMessage http_message(client_socket, method, url, query, path);
 	cout << "method: " << method << " url: " << url << " query: " << query << " path: " << path << endl;
 
-	
+	cgi = cgi;
 
-	if(!cgi) {
-		open_http_file(http_message);
-	}
-	else {
-	    exec_cgi(http_message);
-	}
+    routeWork(http_message);
+
+	// if(!cgi) {
+	// 	open_http_file(http_message);
+	// }
+	// else {
+	//     exec_cgi(http_message);
+	// }
 
 	shutdown(client_socket, SHUT_WR); // 告诉客户端数据已发完
     close(client_socket);

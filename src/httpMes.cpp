@@ -2,6 +2,7 @@
 #include "../include/utils.h"
 #include <sys/socket.h>
 #include <iostream>
+#include <cstring>
 
 // 处理请求头
 void HttpMessage::requestHead() {

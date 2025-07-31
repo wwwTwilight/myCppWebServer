@@ -20,10 +20,6 @@ void error_exit(const string& message) {
     exit(0);
 }
 
-void error_message(const string& message) {
-	cout << "Error: " << message << endl;
-}
-
 int startServer(unsigned short& port) {
     if (port == 0) {
         port = 8080;

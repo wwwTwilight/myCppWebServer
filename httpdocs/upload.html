@@ -3,14 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <title>文件上传</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial, sans-serif; background: #f7f7f7; }
-        .container { max-width: 400px; margin: 60px auto; background: #fff; padding: 32px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        h2 { text-align: center; margin-bottom: 24px; }
+        body {
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', 'Arial', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: #f7f7f7;
+        }
+        .container {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 16px 0 rgba(0,0,0,0.06);
+            padding: 36px 28px;
+            min-width: 260px;
+            max-width: 90vw;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(40px);
+            animation: fadeInUp 0.7s cubic-bezier(.23,1.02,.64,1) 0.1s forwards;
+        }
+        h2 {
+            text-align: center;
+            color: #222;
+            margin-bottom: 24px;
+            font-size: 2em;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
         input[type="file"] { width: 100%; margin-bottom: 16px; }
-        button { width: 100%; padding: 10px; background: #0078d7; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
-        button:hover { background: #005fa3; }
-        .msg { text-align: center; margin-top: 16px; color: #0078d7; }
+        button { width: 100%; padding: 10px 0; background: #f2f2f2; color: #333; border: none; border-radius: 6px; cursor: pointer; font-size: 1em; font-weight: 500; box-shadow: 0 1px 4px rgba(0,0,0,0.03); transition: background 0.2s, color 0.2s, transform 0.2s; }
+        button:hover { background: #222; color: #fff; transform: translateY(-2px) scale(1.04); }
+        .msg { text-align: center; margin-top: 16px; color: #667eea; }
+        @media (max-width: 500px) { .container { padding: 16px 4px; min-width: unset; } h2 { font-size: 1.2em; } }
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
     </style>
 </head>
 <body>

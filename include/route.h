@@ -9,16 +9,16 @@
 
 using namespace std;
 
-class route {
-public:
+extern unordered_map<string, function<int(HttpMessage&)>> get_routes;
+extern unordered_map<string, function<int(HttpMessage&)>> post_routes;
 
-    unordered_map<string, function<int(HttpMessage&)>> get_routes;
-    unordered_map<string, function<int(HttpMessage&)>> post_routes;
+void routeInit();
 
-    route();
+int routeWork(HttpMessage& http_message);
 
-    void routeWork(HttpMessage& http_message);
-};
+int getRoute(HttpMessage& http_message);
+
+int postRoute(HttpMessage& http_message);
 
 int get_page(HttpMessage& http_message);
 int post_page(HttpMessage& http_message);

@@ -32,6 +32,11 @@ void not_found(int client_socket) {
 	cout << "client: " << client_socket << " 404 Not Found" << endl;
 }
 
+// 错误信息报告
+void error_message(const string& message) {
+	cout << "Error: " << message << endl;
+}
+
 // 发送方法不支持的信息
 void method_not_supported(int client_socket) {
     vector<char> buffer(1024);
@@ -51,7 +56,7 @@ void method_not_supported(int client_socket) {
 	snprintf(buffer.data(), buffer.size(), "\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
 
-	snprintf(buffer.data(), buffer.size(), "<html><hea><title>Method Not Implemented</title></head>\r\n");
+	snprintf(buffer.data(), buffer.size(), "<html><head><title>Method Not Implemented</title></head>\r\n");
 	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
 
 	snprintf(buffer.data(), buffer.size(), "<body><p>HTTP request method not supported.</p></body></html>\r\n");
