@@ -16,4 +16,7 @@ int getTime();
 // 获取文件的MIME类型，用于发送正确的Content-Type头
 string get_mime_type(const string& filename);
 
+// 发送HTTP文件内容，自带请求头
+void open_http_file(int& client_socket, const string& filename);
+
 #endif // UTILS_H

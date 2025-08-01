@@ -22,5 +22,6 @@ int postRoute(HttpMessage& http_message);
 
 int get_page(HttpMessage& http_message);
 int post_page(HttpMessage& http_message);
+int login_page(HttpMessage& http_message);
 
 #endif // ROUTER_H

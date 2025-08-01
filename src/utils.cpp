@@ -1,4 +1,11 @@
 #include "../include/utils.h"
+#include "../include/error.h"
+#include <sys/socket.h>
+#include <iostream>
+#include <cstring>
+#include <vector>
+#include <cstdio>
+#include <ctime>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <cstring>
@@ -6,6 +13,7 @@
 #include <vector>
 #include <cstdio>
 #include <ctime>
+#include <fstream>
 
 // 发送HTTP1.0请求头
 void header(int client_socket) {
@@ -83,3 +91,37 @@ string get_mime_type(const string& filename) {
     else if (ext == ".js") return "application/javascript";
     else return "application/octet-stream"; // 默认二进制下载
 }
+
+// 打开文件并发送内容，无完整请求头
+void open_http_file(int& client_socket, const string& filename) {
+    string fullpath = "httpdocs" + filename;
+    ifstream ifile(fullpath.data(), ios::binary);
+    vector<char> buffer(4096);
+    if (!ifile) {
+        not_found(client_socket);
+        return;
+    }
+    ifile.seekg(0, ios::end);
+    size_t filesize = ifile.tellg();
+    ifile.seekg(0, ios::beg);
+
+	string mime_type = get_mime_type(fullpath);
+
+    // 发送带 Content-Length 的 header，1.1协议特色
+    vector<char> headbuf(256);
+    snprintf(headbuf.data(), headbuf.size(),
+        "HTTP/1.1 200 OK\r\n"
+		"Server: MyPoorWebServer\r\n"
+		"Content-Type: %s; charset=UTF-8\r\n"
+		"Content-Length: %zu\r\n\r\n", mime_type.data(), filesize);
+    send(client_socket, headbuf.data(), strlen(headbuf.data()), 0);
+
+    while (!ifile.eof()) {
+        ifile.read(buffer.data(), buffer.size());
+        streamsize count = ifile.gcount();
+        if (count > 0) {
+            send(client_socket, buffer.data(), count, 0);
+        }
+    }
+}
+

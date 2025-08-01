@@ -1,6 +1,8 @@
 #include "../include/route.h"
 #include "../include/utils.h"
 #include "../include/error.h"
+#include "../include/httpMes.h"
+#include "../include/cookie.h"
 #include <fstream>
 #include <sstream>
 #include <sys/stat.h>
@@ -21,8 +23,9 @@ void routeInit() {
     get_routes["/contact.html"] = get_page;
     get_routes["/about.html"] = get_page;
     get_routes["/post.html"] = get_page;
+    get_routes["/login_success.html"] = get_page;
 
-    post_routes["/post.cgi"] = post_page;
+    post_routes["/post.cgi"] = login_page;
 }
 
 int routeWork(HttpMessage& http_message) {
@@ -35,7 +38,7 @@ int routeWork(HttpMessage& http_message) {
         return 1;
     }
     else {
-        method_not_supported(http_message.client_socket);
+        getRoute(http_message);
         return 0;
     }
 }
@@ -60,6 +63,7 @@ int postRoute(HttpMessage& http_message) {
     }
 }
 
+// 泛用get
 int get_page(HttpMessage& http_message) {
     int client_socket = http_message.client_socket;
     string fullpath = "httpdocs" + http_message.path;
@@ -94,6 +98,7 @@ int get_page(HttpMessage& http_message) {
     return 0;
 }
 
+// 泛用post
 int post_page(HttpMessage& http_message) {
     int client_socket = http_message.client_socket;
 	string buffer;
@@ -188,4 +193,44 @@ int post_page(HttpMessage& http_message) {
 	}
 
     return 0;
+}
+
+int login_page(HttpMessage& http_message) {
+    int client_socket = http_message.client_socket;
+	// string buffer;
+
+	// string path = "httpdocs" + http_message.path;
+
+    int content_length = -1;
+
+    for(auto & header : http_message.headers) {
+        if(strcasecmp(header.first.data(), "Content-Length") == 0) {
+            content_length = atoi(header.second.data());
+            break;
+        }
+    }
+
+    if (content_length < 0) {
+        error_message("Content-Length not found");
+        return 0;
+    }
+
+    if(http_message.body.find("username=admin") != string::npos &&
+       http_message.body.find("password=123456") != string::npos) {
+        // 登录成功
+        vector<char> headbuf(256);
+        snprintf(headbuf.data(), headbuf.size(), "HTTP/1.1 200 OK\r\n");
+        send(client_socket, headbuf.data(), strlen(headbuf.data()), 0);
+
+        setCookie set_cookie;
+        send(client_socket, set_cookie.getCookie().data(), set_cookie.getCookie().size(), 0);
+
+        return 1;
+    } else {
+        // 登录失败
+        vector<char> headbuf(256);
+        snprintf(headbuf.data(), headbuf.size(), "HTTP/1.1 401 Unauthorized\r\n");
+        send(client_socket, headbuf.data(), strlen(headbuf.data()), 0);
+        return 0;
+    }
 }
