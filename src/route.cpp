@@ -23,9 +23,9 @@ void routeInit() {
     get_routes["/contact.html"] = get_page;
     get_routes["/about.html"] = get_page;
     get_routes["/post.html"] = get_page;
-    // get_routes["/login_success.html"] = get_page;
+    get_routes["/login_failed.html"] = get_page;
 
-    post_routes["/post.cgi"] = login_page;
+    post_routes["/post.html"] = login_page;
 }
 
 int routeWork(HttpMessage& http_message) {
@@ -231,8 +231,11 @@ int login_page(HttpMessage& http_message) {
     } else {
         // 登录失败
         vector<char> headbuf(256);
-        snprintf(headbuf.data(), headbuf.size(), "HTTP/1.1 401 Unauthorized\r\n");
+        snprintf(headbuf.data(), headbuf.size(), "HTTP/1.1 200 OK\r\n");
         send(client_socket, headbuf.data(), strlen(headbuf.data()), 0);
+
+        open_http_file(client_socket, "/login_failed.html");
+        
         return 0;
     }
 }

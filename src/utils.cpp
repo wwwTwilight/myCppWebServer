@@ -76,7 +76,7 @@ string get_mime_type(const string& filename) {
             c = tolower(c);
         }
 	}
-	if (ext == ".html" || ext == ".htm") return "text/html; charset=UTF-8";
+	if (ext == ".html" || ext == ".htm") return "text/html";
     else if (ext == ".jpg" || ext == ".jpeg") return "image/jpeg";
     else if (ext == ".png") return "image/png";
     else if (ext == ".gif") return "image/gif";
