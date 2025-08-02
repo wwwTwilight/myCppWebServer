@@ -92,7 +92,7 @@ string get_mime_type(const string& filename) {
     else return "application/octet-stream"; // 默认二进制下载
 }
 
-// 打开文件并发送内容，无完整请求头
+// 打开文件并发送内容，无请求行
 void open_http_file(int& client_socket, const string& filename) {
     string fullpath = "httpdocs" + filename;
     ifstream ifile(fullpath.data(), ios::binary);
@@ -110,7 +110,6 @@ void open_http_file(int& client_socket, const string& filename) {
     // 发送带 Content-Length 的 header，1.1协议特色
     vector<char> headbuf(256);
     snprintf(headbuf.data(), headbuf.size(),
-        "HTTP/1.1 200 OK\r\n"
 		"Server: MyPoorWebServer\r\n"
 		"Content-Type: %s; charset=UTF-8\r\n"
 		"Content-Length: %zu\r\n\r\n", mime_type.data(), filesize);

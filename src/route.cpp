@@ -23,7 +23,7 @@ void routeInit() {
     get_routes["/contact.html"] = get_page;
     get_routes["/about.html"] = get_page;
     get_routes["/post.html"] = get_page;
-    get_routes["/login_success.html"] = get_page;
+    // get_routes["/login_success.html"] = get_page;
 
     post_routes["/post.cgi"] = login_page;
 }
@@ -224,6 +224,8 @@ int login_page(HttpMessage& http_message) {
 
         setCookie set_cookie;
         send(client_socket, set_cookie.getCookie().data(), set_cookie.getCookie().size(), 0);
+
+        open_http_file(client_socket, "/login_success.html");
 
         return 1;
     } else {
