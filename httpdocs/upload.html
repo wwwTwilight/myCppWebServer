@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>文件上传</title>
+    <link rel="icon" href="data:;base64,=">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', 'Arial', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 16px 0 rgba(0,0,0,0.06);
+            padding: 36px 28px;
+            min-width: 400px;
+            max-width: 90vw;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(40px);
+            animation: fadeInUp 0.7s cubic-bezier(.23,1.02,.64,1) 0.1s forwards;
+        }
+        h1 {
+            color: #333;
+            font-size: 2em;
+            margin-bottom: 0.5em;
+            font-weight: 600;
+        }
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 40px 20px;
+            margin: 20px 0;
+            background: #fafafa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #f0f0ff;
+        }
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: #e6f2ff;
+        }
+        #fileInput {
+            display: none;
+        }
+        .file-info {
+            margin: 15px 0;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 6px;
+            display: none;
+        }
+        .supported-types {
+            font-size: 0.9em;
+            color: #666;
+            margin: 15px 0;
+        }
+        button {
+            min-width: 120px;
+            padding: 12px 24px;
+            font-size: 1em;
+            border: none;
+            border-radius: 6px;
+            background: #667eea;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #f0f0f0;
+            border-radius: 2px;
+            margin: 15px 0;
+            display: none;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #667eea;
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📁 文件上传</h1>
+        
+        <form id="uploadForm" method="POST" action="upload.cgi" enctype="multipart/form-data">
+            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                <div id="uploadText">
+                    <p>📤 点击选择文件或拖拽到此处</p>
+                    <p>最大文件大小：10MB</p>
+                </div>
+                <input type="file" id="fileInput" name="file" accept=".jpg,.jpeg,.png,.gif,.pdf,.txt,.doc,.docx,.zip,.mp3,.mp4">
+            </div>
+            
+            <div class="file-info" id="fileInfo">
+                <p id="fileName"></p>
+                <p id="fileSize"></p>
+            </div>
+            
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            
+            <div class="supported-types">
+                支持的文件类型：图片(jpg, png, gif)、文档(pdf, txt, doc, docx)、压缩包(zip)、媒体(mp3, mp4)
+            </div>
+            
+            <button type="submit" id="uploadBtn" disabled>上传文件</button>
+            <button type="button" onclick="location.href='index.html'">返回主页</button>
+        </form>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.querySelector('.upload-area');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const uploadForm = document.getElementById('uploadForm');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+
+        // 支持的文件类型和大小限制
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 
+                             'text/plain', 'application/msword', 'application/zip',
+                             'audio/mpeg', 'video/mp4'];
+        const maxSize = 10 * 1024 * 1024; // 10MB
+
+        // 文件选择处理
+        fileInput.addEventListener('change', handleFileSelect);
+
+        // 拖拽上传
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect();
+            }
+        });
+
+        function handleFileSelect() {
+            const file = fileInput.files[0];
+            if (!file) {
+                fileInfo.style.display = 'none';
+                uploadBtn.disabled = true;
+                return;
+            }
+
+            // 检查文件类型
+            if (!allowedTypes.includes(file.type)) {
+                alert('不支持的文件类型！');
+                fileInput.value = '';
+                return;
+            }
+
+            // 检查文件大小
+            if (file.size > maxSize) {
+                alert('文件大小超过10MB限制！');
+                fileInput.value = '';
+                return;
+            }
+
+            // 显示文件信息
+            fileName.textContent = `文件名：${file.name}`;
+            fileSize.textContent = `大小：${(file.size / 1024 / 1024).toFixed(2)} MB`;
+            fileInfo.style.display = 'block';
+            uploadBtn.disabled = false;
+        }
+
+        // 表单提交处理
+        uploadForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            progressBar.style.display = 'block';
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = '上传中...';
+
+            // 模拟上传进度
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 30;
+                if (progress > 90) progress = 90;
+                progressFill.style.width = progress + '%';
+            }, 200);
+
+            // 提交到服务器
+            fetch('upload.cgi', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                clearInterval(progressInterval);
+                progressFill.style.width = '100%';
+                
+                if (response.ok) {
+                    return response.text();
+                } else {
+                    throw new Error('上传失败');
+                }
+            })
+            .then(result => {
+                alert('文件上传成功！');
+                // 重置表单
+                fileInput.value = '';
+                fileInfo.style.display = 'none';
+                progressBar.style.display = 'none';
+                uploadBtn.disabled = true;
+                uploadBtn.textContent = '上传文件';
+            })
+            .catch(error => {
+                clearInterval(progressInterval);
+                alert('上传失败：' + error.message);
+                progressBar.style.display = 'none';
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = '上传文件';
+            });
+        });
+    </script>
+</body>
+</html>

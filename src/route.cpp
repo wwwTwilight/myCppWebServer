@@ -23,9 +23,10 @@ void routeInit() {
     get_routes["/contact.html"] = get_page;
     get_routes["/about.html"] = get_page;
     get_routes["/post.html"] = get_page;
-    get_routes["/login_failed.html"] = get_page;
+    get_routes["/upload.html"] = get_page;
 
     post_routes["/post.html"] = login_page;
+    post_routes["/upload.html"] = post_page;
 }
 
 int routeWork(HttpMessage& http_message) {
