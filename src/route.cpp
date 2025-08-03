@@ -26,7 +26,7 @@ void routeInit() {
     get_routes["/upload.html"] = get_page;
 
     post_routes["/post.html"] = login_page;
-    post_routes["/upload.html"] = post_page;
+    post_routes["/upload"] = file_upload;
 }
 
 int routeWork(HttpMessage& http_message) {
@@ -239,4 +239,8 @@ int login_page(HttpMessage& http_message) {
         
         return 0;
     }
+}
+
+int file_upload(HttpMessage& http_message) {
+    
 }
