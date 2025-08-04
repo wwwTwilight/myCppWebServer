@@ -8,8 +8,14 @@
 void HttpMessage::requestHead() {
     string buffer;
     int n = 1;
-    while (n > 0 && strcmp(buffer.data(), "\n")) {
+    while (n > 0) {
         n = getHttpLine(client_socket, buffer);
+
+        // 要把空行读了，这之后的所有内容都是请求体相关的内容
+        if (buffer == "\r\n" || buffer == "\n" || buffer.length() <= 2) {
+            break;
+        }
+
         size_t pos = buffer.find(':');
         if (pos != string::npos) {
             string key = buffer.substr(0, pos);
