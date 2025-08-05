@@ -264,7 +264,7 @@ int file_upload(HttpMessage& http_message) {
         boundary = boundary.substr(0, boundary.size() - 1); // 去掉结尾的\r或\n
     }
 
-    cout << "Boundary: " << boundary << endl;
+    // cout << "Boundary: " << boundary << endl;
 
     // 创建upload目录
     struct stat st{};
@@ -276,7 +276,7 @@ int file_upload(HttpMessage& http_message) {
 
     string &body = http_message.body;
 
-    cout << "body: " << body << endl;
+    // cout << "body: " << body << endl;
 
     size_t boundary_start = body.find(boundary);
     if (boundary_start == string::npos) {
@@ -313,7 +313,37 @@ int file_upload(HttpMessage& http_message) {
 
     string filename = file_name_secure(content_disposition.filename);
 
-    cout << "Uploading file: " << filename << endl;
+    // cout << "Uploading file: " << filename << endl;
 
-    return 0;
+    left = body.find("\r\n\r\n", right);
+    left += 4; // 跳过\r\n\r\n
+
+    right = body.find(boundary + "--", left);
+
+    fileContent = body.substr(left, right - left);
+
+    ofstream ofile("upload/" + filename, ios::binary);
+    if (!ofile) {
+        error_message("Failed to open file for writing");
+        return 0;
+    }
+
+    ofile.write(fileContent.data(), fileContent.size());
+    ofile.close();
+
+    int client_socket = http_message.client_socket;
+    string response = 
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: text/html; charset=utf-8\r\n"
+        "Connection: close\r\n\r\n"
+        "<!DOCTYPE html>"
+        "<html><head><meta charset='utf-8'></head>"
+        "<body><h1>文件上传成功！</h1>"
+        "<p>文件名: " + filename + "</p>"
+        "<p>大小: " + to_string(fileContent.size()) + " 字节</p>"
+        "</body></html>";
+    
+    send(client_socket, response.c_str(), response.length(), 0);
+
+    return 1;
 }

@@ -130,5 +130,8 @@ string file_name_secure(const string& filename) {
     for (char& c : secure_name) {
         if (c == '/') c = '_';
     }
-    return secure_name + "__" + to_string(getTime());
+    size_t pos = secure_name.find_last_of('.');
+    string name = secure_name.substr(0, pos);
+    string ext = secure_name.substr(pos);
+    return name + "__" + to_string(getTime()) + ext;
 }
