@@ -242,5 +242,78 @@ int login_page(HttpMessage& http_message) {
 }
 
 int file_upload(HttpMessage& http_message) {
-    
+    if(http_message.headers.find("Content-Length") == http_message.headers.end()) {
+        error_message("Content-Length not found");
+        return 0;
+    }
+
+    if(http_message.headers.find("Content-Type") == http_message.headers.end()) {
+        error_message("Content-Type not found");
+        return 0;
+    }
+
+    string boundary = http_message.headers["Content-Type"];
+    size_t pos = boundary.find("boundary=");
+    if (pos == string::npos) {
+        error_message("Boundary not found in Content-Type");
+        return 0;
+    }
+    boundary = "--" + boundary.substr(pos + 9); // 边界字符串，带上开头的“--”
+
+    if(boundary[boundary.size() - 1] == '\r' || boundary[boundary.size() - 1] == '\n') {
+        boundary = boundary.substr(0, boundary.size() - 1); // 去掉结尾的\r或\n
+    }
+
+    cout << "Boundary: " << boundary << endl;
+
+    // 创建upload目录
+    struct stat st{};
+    if (stat("upload", &st) == -1) {
+        mkdir("upload", 0755);
+    }
+
+    string fileContent;
+
+    string &body = http_message.body;
+
+    cout << "body: " << body << endl;
+
+    size_t boundary_start = body.find(boundary);
+    if (boundary_start == string::npos) {
+        error_message("Boundary not found in body");
+        return 0;
+    }
+
+    size_t header_start = boundary_start + boundary.size() + 2;
+
+    Content_Disposition content_disposition;
+
+    size_t left = body.find("name=", header_start);
+
+    if (left == string::npos) {
+        error_message("Content-Disposition not found");
+        return 0;
+    }
+
+    size_t right = body.find(";", left);
+
+    content_disposition.name = body.substr(left + 5 + 1, right - left - 5 - 2); // 这个突兀的 +1 -2 是为了跳过引号
+
+    // 其实这一段没有什么意义，因为本项目上传的表单只有一个文件，name字段只有file
+
+    left = body.find("filename=", right);
+    if (left == string::npos) {
+        error_message("Content-Disposition not found");
+        return 0;
+    }
+
+    right = body.find("\r\n", left);
+
+    content_disposition.filename = body.substr(left + 9 + 1, right - left - 9 - 2);
+
+    string filename = file_name_secure(content_disposition.filename);
+
+    cout << "Uploading file: " << filename << endl;
+
+    return 0;
 }

@@ -208,7 +208,9 @@ void* accept_request(int client_socket) {
 	HttpMessage http_message(client_socket, method, url, query, path);
 	cout << "method: " << method << " url: " << url << " query: " << query << " path: " << path << endl;
 
-	cgi = cgi;
+	if(!(cgi + 10)) {
+		cout << "How can that be? cgi: " << cgi << endl;
+	}
 
     routeWork(http_message);
 

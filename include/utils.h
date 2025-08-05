@@ -6,6 +6,11 @@
 
 using namespace std;
 
+struct Content_Disposition {
+    string name; // 名称
+    string filename; // 文件名
+};
+
 // 发送HTTP1.0请求头
 void header(int client_socket);
 
@@ -18,5 +23,8 @@ string get_mime_type(const string& filename);
 
 // 发送HTTP文件内容，自带请求头
 void open_http_file(int& client_socket, const string& filename);
+
+// 将文件名转换为安全的格式，避免路径穿越等问题，同时将时间戳作为结尾，确保唯一性
+string file_name_secure(const string& filename);
 
 #endif // UTILS_H

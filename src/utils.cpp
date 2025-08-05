@@ -124,3 +124,11 @@ void open_http_file(int& client_socket, const string& filename) {
     }
 }
 
+string file_name_secure(const string& filename) {
+    string secure_name = filename;
+    // 替换文件名中的不安全字符
+    for (char& c : secure_name) {
+        if (c == '/') c = '_';
+    }
+    return secure_name + "__" + to_string(getTime());
+}

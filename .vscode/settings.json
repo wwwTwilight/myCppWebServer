@@ -5,6 +5,7 @@
         "*.wxss": "css",
         "*.wxs": "javascript",
         "functional": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "string": "cpp"
     }
 }
