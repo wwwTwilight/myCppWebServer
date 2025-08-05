@@ -13,7 +13,7 @@
             justify-content: center;
             align-items: center;
             font-family: 'Segoe UI', 'Arial', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f7f7f7;
         }
         .container {
             background: #fff;
@@ -28,10 +28,11 @@
             animation: fadeInUp 0.7s cubic-bezier(.23,1.02,.64,1) 0.1s forwards;
         }
         h1 {
-            color: #333;
+            color: #222;
             font-size: 2em;
             margin-bottom: 0.5em;
             font-weight: 600;
+            letter-spacing: 1px;
         }
         .upload-area {
             border: 2px dashed #ddd;
@@ -43,12 +44,12 @@
             cursor: pointer;
         }
         .upload-area:hover {
-            border-color: #667eea;
-            background: #f0f0ff;
+            border-color: #222;
+            background: #f0f0f0;
         }
         .upload-area.dragover {
-            border-color: #667eea;
-            background: #e6f2ff;
+            border-color: #222;
+            background: #e8e8e8;
         }
         #fileInput {
             display: none;
@@ -71,16 +72,18 @@
             font-size: 1em;
             border: none;
             border-radius: 6px;
-            background: #667eea;
-            color: white;
+            background: #f2f2f2;
+            color: #333;
             font-weight: 500;
             cursor: pointer;
             margin: 5px;
-            transition: all 0.2s;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+            transition: background 0.2s, color 0.2s, transform 0.2s;
         }
         button:hover {
-            background: #5a6fd8;
-            transform: translateY(-2px);
+            background: #222;
+            color: #fff;
+            transform: translateY(-2px) scale(1.04);
         }
         button:disabled {
             background: #ccc;
@@ -97,12 +100,93 @@
         }
         .progress-fill {
             height: 100%;
-            background: #667eea;
+            background: #222;
             border-radius: 2px;
             width: 0%;
             transition: width 0.3s ease;
         }
         @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 消息弹窗样式 */
+        .message {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .message-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        .message-content h3 {
+            margin: 0 0 15px 0;
+            font-size: 1.2em;
+        }
+
+        .message.success .message-content h3 {
+            color: #4CAF50;
+        }
+
+        .message.error .message-content h3 {
+            color: #f44336;
+        }
+
+        .message-content p {
+            margin: 0 0 20px 0;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .message-content button {
+            background: #222;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            min-width: 80px;
+        }
+
+        .message.error .message-content button {
+            background: #222;
+        }
+
+        .message-content button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -120,7 +204,7 @@
                     <p>📤 点击选择文件或拖拽到此处</p>
                     <p>最大文件大小：10MB</p>
                 </div>
-                <input type="file" id="fileInput" name="file" accept=".jpg,.jpeg,.png,.gif,.pdf,.txt,.doc,.docx,.zip,.mp3,.mp4">
+                <input type="file" id="fileInput" name="file" accept=".jpg,.jpeg,.png,.gif,.bmp,.webp,.pdf,.txt,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.7z,.tar,.gz,.mp3,.mp4,.avi,.mov,.wav,.ogg,.csv,.rtf">
             </div>
             
             <div class="file-info" id="fileInfo">
@@ -133,7 +217,7 @@
             </div>
             
             <div class="supported-types">
-                支持的文件类型：图片(jpg, png, gif)、文档(pdf, txt, doc, docx)、压缩包(zip)、媒体(mp3, mp4)
+                支持的文件类型：图片(jpg, png, gif, bmp, webp)、文档(pdf, txt, doc, docx)、表格(xls, xlsx, csv)、演示文稿(ppt, pptx)、压缩包(zip, rar, 7z)、媒体(mp3, mp4, avi, mov, wav)
             </div>
             
             <button type="submit" id="uploadBtn" disabled>上传文件</button>
@@ -153,9 +237,27 @@
         const progressFill = document.getElementById('progressFill');
 
         // 支持的文件类型和大小限制
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 
-                             'text/plain', 'application/msword', 'application/zip',
-                             'audio/mpeg', 'video/mp4'];
+        const allowedTypes = [
+            // 图片格式
+            'image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp',
+            // 文档格式
+            'application/pdf', 'text/plain', 'application/rtf',
+            // Word 文档
+            'application/msword', // .doc
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+            // Excel 表格
+            'application/vnd.ms-excel', // .xls
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+            'text/csv', // .csv
+            // PowerPoint 演示文稿
+            'application/vnd.ms-powerpoint', // .ppt
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation', // .pptx
+            // 压缩文件
+            'application/zip', 'application/x-rar-compressed', 'application/x-7z-compressed',
+            'application/x-tar', 'application/gzip',
+            // 音频视频
+            'audio/mpeg', 'audio/wav', 'audio/ogg', 'video/mp4', 'video/avi', 'video/quicktime'
+        ];
         const maxSize = 10 * 1024 * 1024; // 10MB
 
         // 文件选择处理
@@ -191,14 +293,24 @@
 
             // 检查文件类型
             if (!allowedTypes.includes(file.type)) {
-                alert('不支持的文件类型！');
+                const supportedExtensions = [
+                    '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp',
+                    '.pdf', '.txt', '.rtf', 
+                    '.doc', '.docx', '.xls', '.xlsx', '.csv', '.ppt', '.pptx',
+                    '.zip', '.rar', '.7z', '.tar', '.gz',
+                    '.mp3', '.mp4', '.avi', '.mov', '.wav', '.ogg'
+                ];
+                showMessage('error', '❌ 不支持的文件类型', 
+                    `文件 "${file.name}" 的类型不被支持。\n支持的文件类型：${supportedExtensions.join(', ')}`);
                 fileInput.value = '';
                 return;
             }
 
             // 检查文件大小
             if (file.size > maxSize) {
-                alert('文件大小超过10MB限制！');
+                const fileSizeMB = (file.size / 1024 / 1024).toFixed(2);
+                showMessage('error', '❌ 文件太大', 
+                    `文件 "${file.name}" 大小为 ${fileSizeMB} MB，超过了 10MB 的限制。请选择较小的文件。`);
                 fileInput.value = '';
                 return;
             }
@@ -233,37 +345,87 @@
             }, 200);
 
             // 提交到服务器
+            const uploadTimeout = setTimeout(() => {
+                clearInterval(progressInterval);
+                showMessage('error', '⏰ 上传超时', '上传时间过长，请检查网络连接或尝试上传较小的文件');
+                progressBar.style.display = 'none';
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = '重新上传';
+            }, 30000); // 30秒超时
+
             fetch('upload', {
                 method: 'POST',
                 body: formData
             })
             .then(response => {
+                clearTimeout(uploadTimeout);
                 clearInterval(progressInterval);
                 progressFill.style.width = '100%';
                 
                 if (response.ok) {
-                    return response.text();
+                    // 上传成功
+                    return response.text().then(result => {
+                        setTimeout(() => {
+                            // 显示成功消息
+                            showMessage('success', '✅ 文件上传成功！', `文件 "${file.name}" 已成功上传到服务器`);
+                            // 重置表单
+                            resetForm();
+                        }, 500);
+                    });
                 } else {
-                    throw new Error('上传失败');
+                    // 服务器返回错误状态码
+                    return response.text().then(errorText => {
+                        throw new Error(`服务器错误 (${response.status}): ${errorText || '未知错误'}`);
+                    });
                 }
             })
-            .then(result => {
-                alert('文件上传成功！');
-                // 重置表单
-                fileInput.value = '';
-                fileInfo.style.display = 'none';
-                progressBar.style.display = 'none';
-                uploadBtn.disabled = true;
-                uploadBtn.textContent = '上传文件';
-            })
             .catch(error => {
+                clearTimeout(uploadTimeout);
                 clearInterval(progressInterval);
-                alert('上传失败：' + error.message);
+                console.error('Upload error:', error);
+                
+                // 显示错误消息
+                showMessage('error', '❌ 上传失败', error.message || '网络连接错误，请检查网络后重试');
+                
+                // 恢复上传按钮状态
                 progressBar.style.display = 'none';
                 uploadBtn.disabled = false;
-                uploadBtn.textContent = '上传文件';
+                uploadBtn.textContent = '重新上传';
             });
         });
+
+        // 显示消息的函数（替代alert）
+        function showMessage(type, title, message) {
+            // 创建消息容器
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = `
+                <div class="message-content">
+                    <h3>${title}</h3>
+                    <p>${message}</p>
+                    <button onclick="this.parentElement.parentElement.remove()">确定</button>
+                </div>
+            `;
+            
+            // 添加到页面
+            document.body.appendChild(messageDiv);
+            
+            // 3秒后自动消失
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.remove();
+                }
+            }, 5000);
+        }
+
+        // 重置表单的函数
+        function resetForm() {
+            fileInput.value = '';
+            fileInfo.style.display = 'none';
+            progressBar.style.display = 'none';
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = '上传文件';
+        }
     </script>
 </body>
 </html>
