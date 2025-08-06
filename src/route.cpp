@@ -520,10 +520,10 @@ int handle_delete(HttpMessage& http_message) {
     remove(fullpath.c_str());
 
     string response = 
-        "HTTP/1.1 400 Bad Request\r\n"
-            "Content-Type: application/json; charset=utf-8\r\n"
-            "Connection: close\r\n\r\n"
-            "{\"success\": true, \"message\": \"成功删除\"}";
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: application/json; charset=utf-8\r\n"
+        "Connection: close\r\n\r\n"
+        "{\"success\": true, \"message\": \"成功删除\"}";
     
     send(http_message.client_socket, response.data(), response.length(), 0);
 
