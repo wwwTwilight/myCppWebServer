@@ -3,6 +3,7 @@
 
 #include <string>
 #include <ctime>
+#include "httpMes.h"
 
 using namespace std;
 
@@ -30,5 +31,7 @@ string file_name_secure(const string& filename);
 string executeCommand(const string& command);
 
 string urlDecode(const string& encoded);
+
+int verifyUser(HttpMessage& http_message);
 
 #endif // UTILS_H

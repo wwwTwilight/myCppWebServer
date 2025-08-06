@@ -24,7 +24,7 @@ void routeInit() {
     get_routes["/about.html"] = get_page;
     get_routes["/post.html"] = get_page;
     get_routes["/upload.html"] = get_page;
-    get_routes["/files.html"] = get_page;
+    get_routes["/files.html"] = get_page_with_verify;
     get_routes["/api/files"] = list_uploads_json;
     get_routes["/api/download"] = handle_download;
     get_routes["/api/delete"] = handle_delete; // 这里为了方便，不另外开一个delete_route，暂时归类到get_routes
@@ -100,8 +100,24 @@ int get_page(HttpMessage& http_message) {
     return 1;
 }
 
+int get_page_with_verify(HttpMessage& http_message) {
+    if(verifyUser(http_message)) {
+        get_page(http_message);
+        return 1;
+    } else {
+        forbidden(http_message.client_socket);
+        return 0;
+    }
+}
+
 // 泛用获取文件内容
 int get_file(HttpMessage& http_message) {
+
+    if(verifyUser(http_message) == 0) {
+        forbidden(http_message.client_socket);
+        return 0;
+    }
+
     int client_socket = http_message.client_socket;
     
     // URL 解码路径
@@ -282,6 +298,12 @@ int login_page(HttpMessage& http_message) {
 }
 
 int file_upload(HttpMessage& http_message) {
+
+    if(verifyUser(http_message) == 0) {
+        forbidden(http_message.client_socket);
+        return 0;
+    }
+
     if(http_message.headers.find("Content-Length") == http_message.headers.end()) {
         error_message("Content-Length not found");
         return 0;

@@ -13,5 +13,7 @@ void method_not_supported(int client_socket);
 void error_message(const string& message);
 // 发送404 Not Found响应
 void not_found(int client_socket);
+// 不允许访问的响应
+void forbidden(int client_socket);
 
 #endif // ERROR_H

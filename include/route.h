@@ -21,6 +21,7 @@ int getRoute(HttpMessage& http_message);
 int postRoute(HttpMessage& http_message);
 
 int get_page(HttpMessage& http_message);
+int get_page_with_verify(HttpMessage& http_message);
 int post_page(HttpMessage& http_message);
 int login_page(HttpMessage& http_message);
 int file_upload(HttpMessage& http_message);

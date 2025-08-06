@@ -172,3 +172,27 @@ string urlDecode(const string& encoded) {
 
     return decoded;
 }
+
+int verifyUser(HttpMessage& http_message) {
+    if(http_message.cookie == nullptr) {
+        return 0;
+    }
+    
+    if(!http_message.cookie->cookies.contains("time") || 
+       !http_message.cookie->cookies.contains("max-age")) {
+        return 0;
+    }
+    
+    string time = http_message.cookie->cookies["time"];
+    string maxAge = http_message.cookie->cookies["max-age"];
+    
+    if(time.empty() || maxAge.empty()) {
+        return 0;
+    }
+
+    try {
+        return (getTime() <= stoi(time) + stoi(maxAge)) ? 1 : 0;
+    } catch (const std::exception& e) {
+        return 0;
+    }
+}

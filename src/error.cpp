@@ -64,3 +64,26 @@ void method_not_supported(int client_socket) {
 
 	cout << "client: " << client_socket << " 501 Method Not Implemented" << endl;
 }
+
+void forbidden(int client_socket) {
+	vector<char> buffer(1024);
+	snprintf(buffer.data(), buffer.size(), "HTTP/1.0 403 Forbidden\r\n");
+	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
+
+	snprintf(buffer.data(), buffer.size(), "Server: MyPoorWebServer\r\n");
+	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
+
+	snprintf(buffer.data(), buffer.size(), "Content-Type: text/html; charset=UTF-8\r\n");
+	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
+
+	snprintf(buffer.data(), buffer.size(), "\r\n");
+	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
+
+	snprintf(buffer.data(), buffer.size(), "<html><head><title>Forbidden</title></head>\r\n");
+	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
+
+	snprintf(buffer.data(), buffer.size(), "<body><p>请先登录</p></body></html>\r\n");
+	send(client_socket, buffer.data(), strlen(buffer.data()), 0);
+
+	cout << "client: " << client_socket << " 403 Forbidden" << endl;
+}
