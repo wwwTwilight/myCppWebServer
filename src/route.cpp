@@ -27,10 +27,10 @@ void routeInit() {
     get_routes["/files.html"] = get_page;
     get_routes["/api/files"] = list_uploads_json;
     get_routes["/api/download"] = handle_download;
+    get_routes["/api/delete"] = handle_delete; // 这里为了方便，不另外开一个delete_route，暂时归类到get_routes
 
     post_routes["/post.html"] = login_page;
     post_routes["/upload"] = file_upload;
-    post_routes["/api/delete"] = file_upload;
 }
 
 int routeWork(HttpMessage& http_message) {
@@ -467,5 +467,43 @@ int handle_download(HttpMessage& http_message) {
 }
 
 int handle_delete(HttpMessage& http_message) {
+    string queryKey = "file=";
+    size_t pos = http_message.query.find(queryKey) + queryKey.size();
+    if (pos == string::npos || pos >= http_message.query.size()) {
+        string response = 
+            "HTTP/1.1 400 Bad Request\r\n"
+            "Content-Type: application/json; charset=utf-8\r\n"
+            "Connection: close\r\n\r\n"
+            "{\"success\": false, \"message\": \"缺少文件参数\"}";
+        send(http_message.client_socket, response.c_str(), response.length(), 0);
+        return 0;
+    }
 
+    string filename = urlDecode(http_message.query.substr(pos));
+
+    string fullpath = "upload/" + filename;
+
+    cout << "Deleting file: " << fullpath << endl;
+
+    struct stat st{};
+    if (stat(fullpath.c_str(), &st) == -1) {
+        string response = 
+            "HTTP/1.1 400 Bad Request\r\n"
+            "Content-Type: application/json; charset=utf-8\r\n"
+            "Connection: close\r\n\r\n"
+            "{\"success\": false, \"message\": \"不存在文件\"}";
+        send(http_message.client_socket, response.c_str(), response.length(), 0);
+    }
+
+    remove(fullpath.c_str());
+
+    string response = 
+        "HTTP/1.1 400 Bad Request\r\n"
+            "Content-Type: application/json; charset=utf-8\r\n"
+            "Connection: close\r\n\r\n"
+            "{\"success\": true, \"message\": \"成功删除\"}";
+    
+    send(http_message.client_socket, response.data(), response.length(), 0);
+
+    return 1;
 }
