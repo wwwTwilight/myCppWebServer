@@ -26,9 +26,11 @@ void routeInit() {
     get_routes["/upload.html"] = get_page;
     get_routes["/files.html"] = get_page;
     get_routes["/api/files"] = list_uploads_json;
+    get_routes["/api/download"] = handle_download;
 
     post_routes["/post.html"] = login_page;
     post_routes["/upload"] = file_upload;
+    post_routes["/api/delete"] = file_upload;
 }
 
 int routeWork(HttpMessage& http_message) {
@@ -351,8 +353,6 @@ int file_upload(HttpMessage& http_message) {
 
     string filename = file_name_secure(content_disposition.filename);
 
-    // cout << "Uploading file: " << filename << endl;
-
     left = body.find("\r\n\r\n", right);
     left += 4; // 跳过\r\n\r\n
 
@@ -416,4 +416,56 @@ int list_uploads_json(HttpMessage& http_message) {
     
     send(client_socket, response.data(), response.length(), 0);
     return 1;
+}
+
+int handle_download(HttpMessage& http_message) {
+    string queryKey = "file=";
+    size_t pos = http_message.query.find(queryKey) + queryKey.size();
+    if (pos == string::npos || pos >= http_message.query.size()) {
+        not_found(http_message.client_socket);
+        return 0;
+    }
+
+    string filename = urlDecode(http_message.query.substr(pos));
+
+    string fullpath = "upload/" + filename;
+
+    cout << "Downloading file: " << fullpath << endl;
+
+    ifstream ifile(fullpath.data(), ios::binary);
+    if (!ifile) {
+        not_found(http_message.client_socket);
+        return 0;
+    }
+    
+    ifile.seekg(0, ios::end);
+    size_t filesize = ifile.tellg();
+    ifile.seekg(0, ios::beg);
+
+    string mime_type = get_mime_type(fullpath);
+
+    vector<char> headbuf(512);
+    snprintf(headbuf.data(), headbuf.size(),
+        "HTTP/1.1 200 OK\r\n"
+        "Server: MyPoorWebServer\r\n"
+        "Content-Type: %s\r\n"
+        "Content-Disposition: attachment; filename=\"%s\"\r\n"
+        "Content-Length: %zu\r\n\r\n", mime_type.data(), filename.data(), filesize);
+    
+    send(http_message.client_socket, headbuf.data(), strlen(headbuf.data()), 0);
+
+    vector<char> buffer(4096);
+    while (!ifile.eof()) {
+        ifile.read(buffer.data(), buffer.size());
+        streamsize count = ifile.gcount();
+        if (count > 0) {
+            send(http_message.client_socket, buffer.data(), count, 0);
+        }
+    }
+    
+    return 1;
+}
+
+int handle_delete(HttpMessage& http_message) {
+
 }

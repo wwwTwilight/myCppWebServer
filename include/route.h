@@ -26,5 +26,7 @@ int login_page(HttpMessage& http_message);
 int file_upload(HttpMessage& http_message);
 int list_uploads_json(HttpMessage& http_message);
 int get_file(HttpMessage& http_message);
+int handle_download(HttpMessage& http_message);
+int handle_delete(HttpMessage& http_message);
 
 #endif // ROUTER_H

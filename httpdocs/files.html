@@ -12,72 +12,117 @@
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f7fa;
-            color: #333;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', 'Arial', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: #f7f7f7;
+            padding: 20px 0;
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 0 20px;
         }
         
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 10px;
-            margin-bottom: 30px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 16px 0 rgba(0,0,0,0.06);
+            padding: 36px 28px;
+            margin-bottom: 20px;
             text-align: center;
+            opacity: 0;
+            transform: translateY(40px);
+            animation: fadeInUp 0.7s cubic-bezier(.23,1.02,.64,1) 0.1s forwards;
         }
         
         .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+            color: #222;
+            font-size: 2em;
+            margin-bottom: 0.5em;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1em;
+            margin-bottom: 0;
         }
         
         .controls {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 16px 0 rgba(0,0,0,0.06);
+            padding: 20px 28px;
+            margin-bottom: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
+            opacity: 0;
+            transform: translateY(40px);
+            animation: fadeInUp 0.7s cubic-bezier(.23,1.02,.64,1) 0.2s forwards;
         }
         
         .btn {
-            background: #4CAF50;
-            color: white;
+            min-width: 120px;
             padding: 12px 24px;
+            font-size: 1em;
             border: none;
             border-radius: 6px;
+            background: #f2f2f2;
+            color: #333;
+            font-weight: 500;
             cursor: pointer;
             text-decoration: none;
             display: inline-block;
-            font-size: 14px;
-            transition: all 0.3s;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+            transition: background 0.2s, color 0.2s, transform 0.2s;
         }
         
         .btn:hover {
-            background: #45a049;
-            transform: translateY(-2px);
+            background: #222;
+            color: #fff;
+            transform: translateY(-2px) scale(1.04);
         }
         
-        .btn-secondary {
-            background: #2196F3;
+        .btn-small {
+            min-width: 80px;
+            padding: 8px 16px;
+            font-size: 0.9em;
+            margin: 0 4px;
         }
         
-        .btn-secondary:hover {
-            background: #1976D2;
+        .btn-danger {
+            background: #ff4757;
+            color: #fff;
+        }
+        
+        .btn-danger:hover {
+            background: #ff3742;
+        }
+        
+        .btn-success {
+            background: #2ed573;
+            color: #fff;
+        }
+        
+        .btn-success:hover {
+            background: #17a085;
         }
         
         .file-stats {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 16px 0 rgba(0,0,0,0.06);
+            padding: 28px;
             margin-bottom: 20px;
+            opacity: 0;
+            transform: translateY(40px);
+            animation: fadeInUp 0.7s cubic-bezier(.23,1.02,.64,1) 0.3s forwards;
         }
         
         .stats-grid {
@@ -89,27 +134,43 @@
         .stat-item {
             text-align: center;
             padding: 20px;
-            background: #f8f9ff;
+            background: #f7f7f7;
             border-radius: 8px;
         }
         
         .stat-number {
             font-size: 2em;
-            font-weight: bold;
-            color: #667eea;
+            font-weight: 600;
+            color: #222;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
         }
         
         .file-list {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 16px 0 rgba(0,0,0,0.06);
             overflow: hidden;
+            opacity: 0;
+            transform: translateY(40px);
+            animation: fadeInUp 0.7s cubic-bezier(.23,1.02,.64,1) 0.4s forwards;
         }
         
         .file-list-header {
-            background: #f8f9fa;
-            padding: 20px;
-            border-bottom: 1px solid #dee2e6;
+            background: #f7f7f7;
+            padding: 20px 28px;
+            border-bottom: 1px solid #e8e8e8;
+        }
+        
+        .file-list-header h2 {
+            color: #222;
+            font-size: 1.3em;
+            font-weight: 600;
+            margin: 0;
         }
         
         .file-table {
@@ -119,64 +180,116 @@
         
         .file-table th,
         .file-table td {
-            padding: 15px;
+            padding: 16px 28px;
             text-align: left;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #f0f0f0;
         }
         
         .file-table th {
-            background: #f8f9fa;
+            background: #f7f7f7;
             font-weight: 600;
-            color: #495057;
+            color: #222;
+            font-size: 0.9em;
         }
         
         .file-table tr:hover {
-            background-color: #f8f9ff;
+            background-color: #f9f9f9;
         }
         
         .file-icon {
             width: 20px;
             height: 20px;
-            margin-right: 10px;
+            margin-right: 12px;
             vertical-align: middle;
         }
         
         .file-link {
-            color: #007bff;
+            color: #222;
             text-decoration: none;
-            cursor: pointer;
+            font-weight: 500;
             transition: color 0.2s;
         }
         
         .file-link:hover {
-            color: #0056b3;
-            text-decoration: underline;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 40px;
             color: #666;
         }
         
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 20px 0;
-        }
-        
-        .empty-state {
+        .loading {
             text-align: center;
             padding: 60px 20px;
             color: #666;
         }
         
-        .empty-state img {
-            width: 100px;
+        .error {
+            background: #ff4757;
+            color: #fff;
+            padding: 16px 28px;
+            margin: 20px 28px;
+            border-radius: 8px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #666;
+        }
+        
+        .empty-state .empty-icon {
+            font-size: 4em;
             margin-bottom: 20px;
-            opacity: 0.5;
+            opacity: 0.3;
+        }
+        
+        .empty-state h3 {
+            color: #222;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .empty-state a {
+            color: #222;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .empty-state a:hover {
+            text-decoration: underline;
+        }
+        
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 15px;
+            }
+            
+            .header, .controls, .file-stats, .file-list {
+                padding: 20px 16px;
+            }
+            
+            .file-table th,
+            .file-table td {
+                padding: 12px 16px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .btn {
+                min-width: 150px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
         }
     </style>
 </head>
@@ -201,11 +314,11 @@
             <div class="stats-grid">
                 <div class="stat-item">
                     <div class="stat-number" id="fileCount">-</div>
-                    <div>文件总数</div>
+                    <div class="stat-label">文件总数</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-number" id="lastUpdate">-</div>
-                    <div>最后更新</div>
+                    <div class="stat-label">最后更新</div>
                 </div>
             </div>
         </div>
@@ -226,6 +339,7 @@
                     <thead>
                         <tr>
                             <th>📄 文件名</th>
+                            <th>🛠️ 操作</th>
                         </tr>
                     </thead>
                     <tbody id="fileTableBody"></tbody>
@@ -233,7 +347,7 @@
             </div>
             
             <div id="emptyState" class="empty-state" style="display: none;">
-                <div style="font-size: 4em;">📂</div>
+                <div class="empty-icon">📂</div>
                 <h3>暂无文件</h3>
                 <p>还没有上传任何文件，<a href="/upload.html">立即上传</a>第一个文件吧！</p>
             </div>
@@ -318,6 +432,17 @@
                             <strong>${filename}</strong>
                         </a>
                     `;
+                    
+                    // 操作列
+                    const actionCell = row.insertCell(1);
+                    actionCell.innerHTML = `
+                        <button class="btn btn-success btn-small" onclick="downloadFile('${filename}')">
+                            📥 下载
+                        </button>
+                        <button class="btn btn-danger btn-small" onclick="deleteFile('${filename}')">
+                            🗑️ 删除
+                        </button>
+                    `;
                 });
             }
         }
@@ -340,6 +465,33 @@
                 'mp4': '🎬', 'avi': '🎬'
             };
             return iconMap[ext] || '📄';
+        }
+        
+        // 下载文件
+        function downloadFile(filename) {
+            window.open(`/api/download?file=${encodeURIComponent(filename)}`, '_blank');
+        }
+        
+        // 删除文件
+        function deleteFile(filename) {
+            if (confirm(`确定要删除文件 "${filename}" 吗？此操作不可恢复！`)) {
+                fetch(`/api/delete?file=${encodeURIComponent(filename)}`, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ 文件删除成功！');
+                        loadFileList(); // 重新加载文件列表
+                    } else {
+                        alert('❌ 删除失败: ' + (data.message || '未知错误'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('❌ 删除失败，请检查网络连接');
+                });
+            }
         }
     </script>
 </body>
