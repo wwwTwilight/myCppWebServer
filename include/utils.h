@@ -27,4 +27,6 @@ void open_http_file(int& client_socket, const string& filename);
 // 将文件名转换为安全的格式，避免路径穿越等问题，同时将时间戳作为结尾，确保唯一性
 string file_name_secure(const string& filename);
 
+string executeCommand(const string& command);
+
 #endif // UTILS_H

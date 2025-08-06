@@ -24,6 +24,8 @@ void routeInit() {
     get_routes["/about.html"] = get_page;
     get_routes["/post.html"] = get_page;
     get_routes["/upload.html"] = get_page;
+    get_routes["/files.html"] = get_page;
+    get_routes["/api/files"] = list_uploads_json;
 
     post_routes["/post.html"] = login_page;
     post_routes["/upload"] = file_upload;
@@ -345,5 +347,37 @@ int file_upload(HttpMessage& http_message) {
     
     send(client_socket, response.c_str(), response.length(), 0);
 
+    return 1;
+}
+
+int list_uploads_json(HttpMessage& http_message) {
+    int client_socket = http_message.client_socket;
+    
+    string command = "cd upload && ls -1";
+    string files_output = executeCommand(command);
+    
+    // 简单的JSON格式
+    string files_json = "[";
+    if (!files_output.empty()) {
+        istringstream iss(files_output);
+        string filename;
+        bool first = true;
+        
+        while (getline(iss, filename)) {
+            if (filename.empty()) continue;
+            
+            if (!first) files_json += ",";
+            files_json += "\"" + filename + "\"";  // 只返回文件名字符串
+            first = false;
+        }
+    }
+    files_json += "]";
+    
+    string response = 
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: application/json; charset=utf-8\r\n"
+        "Connection: close\r\n\r\n" + files_json;
+    
+    send(client_socket, response.data(), response.length(), 0);
     return 1;
 }

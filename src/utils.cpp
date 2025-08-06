@@ -135,3 +135,20 @@ string file_name_secure(const string& filename) {
     string ext = secure_name.substr(pos);
     return name + "__" + to_string(getTime()) + ext;
 }
+
+string executeCommand(const string& command) {
+    char buffer[128];
+    std::string result = "";
+    
+    FILE* pipe = popen(command.c_str(), "r");
+    if (!pipe) {
+        return "Error: 无法执行命令";
+    }
+    
+    while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+        result += buffer;
+    }
+    
+    pclose(pipe);
+    return result;
+}

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件管理</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .btn {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #2196F3;
+        }
+        
+        .btn-secondary:hover {
+            background: #1976D2;
+        }
+        
+        .file-stats {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9ff;
+            border-radius: 8px;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .file-list {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .file-list-header {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .file-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .file-table th,
+        .file-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .file-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .file-table tr:hover {
+            background-color: #f8f9ff;
+        }
+        
+        .file-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .empty-state img {
+            width: 100px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📁 文件管理系统</h1>
+            <p>管理和查看上传的文件</p>
+        </div>
+        
+        <div class="controls">
+            <div>
+                <a href="/upload.html" class="btn">📤 上传文件</a>
+                <button id="refreshBtn" class="btn btn-secondary">🔄 刷新列表</button>
+            </div>
+            <div>
+                <a href="/index.html" class="btn btn-secondary">🏠 返回首页</a>
+            </div>
+        </div>
+        
+        <div class="file-stats">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number" id="fileCount">-</div>
+                    <div>文件总数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="lastUpdate">-</div>
+                    <div>最后更新</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="file-list">
+            <div class="file-list-header">
+                <h2>📋 文件列表</h2>
+            </div>
+            
+            <div id="loadingDiv" class="loading">
+                <p>🔄 正在加载文件列表...</p>
+            </div>
+            
+            <div id="errorDiv" class="error" style="display: none;"></div>
+            
+            <div id="fileTableContainer" style="display: none;">
+                <table class="file-table">
+                    <thead>
+                        <tr>
+                            <th>📄 文件名</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fileTableBody"></tbody>
+                </table>
+            </div>
+            
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <div style="font-size: 4em;">📂</div>
+                <h3>暂无文件</h3>
+                <p>还没有上传任何文件，<a href="/upload.html">立即上传</a>第一个文件吧！</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let fileData = [];
+        
+        // 页面加载时获取文件列表
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFileList();
+        });
+        
+        // 刷新按钮事件
+        document.getElementById('refreshBtn').addEventListener('click', function() {
+            loadFileList();
+        });
+        
+        // 加载文件列表
+        function loadFileList() {
+            showLoading();
+            
+            fetch('/api/files')
+                .then(response => response.json())
+                .then(data => {
+                    // 后端直接返回文件名数组，如: ["file1.txt", "file2.jpg"]
+                    if (Array.isArray(data)) {
+                        fileData = data;
+                        displayFileList(data);
+                        updateStats(data.length);
+                    } else {
+                        showError('数据格式错误');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showError('网络错误，请检查服务器连接');
+                });
+        }
+        
+        // 显示加载状态
+        function showLoading() {
+            document.getElementById('loadingDiv').style.display = 'block';
+            document.getElementById('errorDiv').style.display = 'none';
+            document.getElementById('fileTableContainer').style.display = 'none';
+            document.getElementById('emptyState').style.display = 'none';
+        }
+        
+        // 显示错误信息
+        function showError(message) {
+            document.getElementById('loadingDiv').style.display = 'none';
+            document.getElementById('errorDiv').style.display = 'block';
+            document.getElementById('errorDiv').textContent = '❌ ' + message;
+            document.getElementById('fileTableContainer').style.display = 'none';
+            document.getElementById('emptyState').style.display = 'none';
+        }
+        
+        // 显示文件列表
+        function displayFileList(files) {
+            document.getElementById('loadingDiv').style.display = 'none';
+            document.getElementById('errorDiv').style.display = 'none';
+            
+            if (files.length === 0) {
+                document.getElementById('emptyState').style.display = 'block';
+                document.getElementById('fileTableContainer').style.display = 'none';
+            } else {
+                document.getElementById('emptyState').style.display = 'none';
+                document.getElementById('fileTableContainer').style.display = 'block';
+                
+                const tbody = document.getElementById('fileTableBody');
+                tbody.innerHTML = '';
+                
+                files.forEach(filename => {
+                    const row = tbody.insertRow();
+                    
+                    // 文件名列
+                    const nameCell = row.insertCell(0);
+                    nameCell.innerHTML = `
+                        <span class="file-icon">${getFileIcon(filename)}</span>
+                        <strong>${filename}</strong>
+                    `;
+                });
+            }
+        }
+        
+        // 更新统计信息
+        function updateStats(count) {
+            document.getElementById('fileCount').textContent = count;
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+        }
+        
+        // 根据文件扩展名返回图标
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const iconMap = {
+                'jpg': '🖼️', 'jpeg': '🖼️', 'png': '🖼️', 'gif': '🖼️',
+                'pdf': '📄', 'doc': '📝', 'docx': '📝',
+                'txt': '📄', 'md': '📄',
+                'zip': '🗜️', 'rar': '🗜️',
+                'mp3': '🎵', 'wav': '🎵',
+                'mp4': '🎬', 'avi': '🎬'
+            };
+            return iconMap[ext] || '📄';
+        }
+    </script>
+</body>
+</html>
