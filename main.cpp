@@ -3,6 +3,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <csignal>
 #include "include/webserverSet.h"
 #include "include/requestHandler.h"
 #include "include/route.h"
@@ -10,6 +11,7 @@
 using namespace std;
 
 int main() {
+    signal(SIGPIPE, SIG_IGN);
     int server_socket = -1;
     unsigned short port = 8080;
     int client_socket = -1;

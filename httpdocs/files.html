@@ -5,387 +5,197 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>文件管理</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
         body {
-            min-height: 100vh;
-            margin: 0;
-            font-family: 'Segoe UI', 'Arial', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            background: #f7f7f7;
-            padding: 20px 0;
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
         }
         
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        
-        .header {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 2px 16px 0 rgba(0,0,0,0.06);
-            padding: 36px 28px;
-            margin-bottom: 20px;
+        h1 {
+            color: #333;
             text-align: center;
-            opacity: 0;
-            transform: translateY(40px);
-            animation: fadeInUp 0.7s cubic-bezier(.23,1.02,.64,1) 0.1s forwards;
-        }
-        
-        .header h1 {
-            color: #222;
-            font-size: 2em;
-            margin-bottom: 0.5em;
-            font-weight: 600;
-            letter-spacing: 1px;
-        }
-        
-        .header p {
-            color: #666;
-            font-size: 1em;
-            margin-bottom: 0;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
         }
         
         .controls {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 2px 16px 0 rgba(0,0,0,0.06);
-            padding: 20px 28px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-            opacity: 0;
-            transform: translateY(40px);
-            animation: fadeInUp 0.7s cubic-bezier(.23,1.02,.64,1) 0.2s forwards;
-        }
-        
-        .btn {
-            min-width: 120px;
-            padding: 12px 24px;
-            font-size: 1em;
-            border: none;
-            border-radius: 6px;
-            background: #f2f2f2;
-            color: #333;
-            font-weight: 500;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.03);
-            transition: background 0.2s, color 0.2s, transform 0.2s;
-        }
-        
-        .btn:hover {
-            background: #222;
-            color: #fff;
-            transform: translateY(-2px) scale(1.04);
-        }
-        
-        .btn-small {
-            min-width: 80px;
-            padding: 8px 16px;
-            font-size: 0.9em;
-            margin: 0 4px;
-        }
-        
-        .btn-danger {
-            background: #ff4757;
-            color: #fff;
-        }
-        
-        .btn-danger:hover {
-            background: #ff3742;
-        }
-        
-        .btn-success {
-            background: #2ed573;
-            color: #fff;
-        }
-        
-        .btn-success:hover {
-            background: #17a085;
-        }
-        
-        .file-stats {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 2px 16px 0 rgba(0,0,0,0.06);
-            padding: 28px;
-            margin-bottom: 20px;
-            opacity: 0;
-            transform: translateY(40px);
-            animation: fadeInUp 0.7s cubic-bezier(.23,1.02,.64,1) 0.3s forwards;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-        }
-        
-        .stat-item {
+            margin: 20px 0;
             text-align: center;
-            padding: 20px;
-            background: #f7f7f7;
-            border-radius: 8px;
         }
         
-        .stat-number {
-            font-size: 2em;
-            font-weight: 600;
-            color: #222;
-            margin-bottom: 5px;
+        .controls a, .controls button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            background: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
         }
         
-        .stat-label {
-            color: #666;
-            font-size: 0.9em;
+        .controls a:hover, .controls button:hover {
+            background: #45a049;
+        }
+        .controls a:hover, .controls button:hover {
+            background: #45a049;
         }
         
-        .file-list {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 2px 16px 0 rgba(0,0,0,0.06);
-            overflow: hidden;
-            opacity: 0;
-            transform: translateY(40px);
-            animation: fadeInUp 0.7s cubic-bezier(.23,1.02,.64,1) 0.4s forwards;
-        }
-        
-        .file-list-header {
-            background: #f7f7f7;
-            padding: 20px 28px;
-            border-bottom: 1px solid #e8e8e8;
-        }
-        
-        .file-list-header h2 {
-            color: #222;
-            font-size: 1.3em;
-            font-weight: 600;
-            margin: 0;
+        .stats {
+            background: white;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
         }
         
         .file-table {
             width: 100%;
+            background: white;
             border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         
-        .file-table th,
-        .file-table td {
-            padding: 16px 28px;
+        .file-table th, .file-table td {
+            padding: 15px;
             text-align: left;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid #ddd;
         }
         
         .file-table th {
-            background: #f7f7f7;
-            font-weight: 600;
-            color: #222;
-            font-size: 0.9em;
+            background: #f8f9fa;
+            font-weight: bold;
         }
         
         .file-table tr:hover {
-            background-color: #f9f9f9;
+            background: #f5f5f5;
         }
         
-        .file-icon {
-            width: 20px;
-            height: 20px;
-            margin-right: 12px;
-            vertical-align: middle;
+        /* 简单直接的按钮样式 */
+        .download-btn {
+            background: #28a745 !important;
+            color: white !important;
+            padding: 8px 15px !important;
+            border: none !important;
+            border-radius: 3px !important;
+            cursor: pointer !important;
+            margin-right: 5px !important;
+            font-size: 12px !important;
+            display: inline-block !important;
+            text-decoration: none !important;
         }
         
-        .file-link {
-            color: #222;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.2s;
+        .delete-btn {
+            background: #dc3545 !important;
+            color: white !important;
+            padding: 8px 15px !important;
+            border: none !important;
+            border-radius: 3px !important;
+            cursor: pointer !important;
+            font-size: 12px !important;
+            display: inline-block !important;
+            text-decoration: none !important;
         }
         
-        .file-link:hover {
-            color: #666;
+        .download-btn:hover {
+            background: #218838 !important;
         }
         
-        .loading {
+        .delete-btn:hover {
+            background: #c82333 !important;
+        }
+        
+        .loading, .error, .empty {
             text-align: center;
-            padding: 60px 20px;
-            color: #666;
+            padding: 40px;
+            background: white;
+            margin: 20px 0;
+            border-radius: 5px;
         }
         
         .error {
-            background: #ff4757;
-            color: #fff;
-            padding: 16px 28px;
-            margin: 20px 28px;
-            border-radius: 8px;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 80px 20px;
-            color: #666;
-        }
-        
-        .empty-state .empty-icon {
-            font-size: 4em;
-            margin-bottom: 20px;
-            opacity: 0.3;
-        }
-        
-        .empty-state h3 {
-            color: #222;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-        
-        .empty-state a {
-            color: #222;
-            text-decoration: none;
-            font-weight: 500;
-        }
-        
-        .empty-state a:hover {
-            text-decoration: underline;
-        }
-        
-        @keyframes fadeInUp {
-            to {
-                opacity: 1;
-                transform: none;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .container {
-                padding: 0 15px;
-            }
-            
-            .header, .controls, .file-stats, .file-list {
-                padding: 20px 16px;
-            }
-            
-            .file-table th,
-            .file-table td {
-                padding: 12px 16px;
-            }
-            
-            .controls {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .btn {
-                min-width: 150px;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
+            color: red;
+            background: #ffe6e6 !important;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📁 文件管理系统</h1>
-            <p>管理和查看上传的文件</p>
-        </div>
-        
-        <div class="controls">
-            <div>
-                <a href="/upload.html" class="btn">📤 上传文件</a>
-                <button id="refreshBtn" class="btn btn-secondary">🔄 刷新列表</button>
-            </div>
-            <div>
-                <a href="/index.html" class="btn btn-secondary">🏠 返回首页</a>
-            </div>
-        </div>
-        
-        <div class="file-stats">
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="stat-number" id="fileCount">-</div>
-                    <div class="stat-label">文件总数</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number" id="lastUpdate">-</div>
-                    <div class="stat-label">最后更新</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="file-list">
-            <div class="file-list-header">
-                <h2>📋 文件列表</h2>
-            </div>
-            
-            <div id="loadingDiv" class="loading">
-                <p>🔄 正在加载文件列表...</p>
-            </div>
-            
-            <div id="errorDiv" class="error" style="display: none;"></div>
-            
-            <div id="fileTableContainer" style="display: none;">
-                <table class="file-table">
-                    <thead>
-                        <tr>
-                            <th>📄 文件名</th>
-                            <th>🛠️ 操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="fileTableBody"></tbody>
-                </table>
-            </div>
-            
-            <div id="emptyState" class="empty-state" style="display: none;">
-                <div class="empty-icon">📂</div>
-                <h3>暂无文件</h3>
-                <p>还没有上传任何文件，<a href="/upload.html">立即上传</a>第一个文件吧！</p>
-            </div>
-        </div>
+    <h1>📁 文件管理系统</h1>
+    
+    <div class="controls">
+        <a href="/upload.html">📤 上传文件</a>
+        <button id="refreshBtn">🔄 刷新列表</button>
+        <a href="/index.html">🏠 返回首页</a>
+    </div>
+    
+    <div class="stats">
+        <strong>文件总数:</strong> <span id="fileCount">-</span> &nbsp;&nbsp;&nbsp;
+        <strong>最后更新:</strong> <span id="lastUpdate">-</span>
+    </div>
+    
+    <div id="loadingDiv" class="loading">
+        🔄 正在加载文件列表...
+    </div>
+    
+    <div id="errorDiv" class="error" style="display: none;"></div>
+    
+    <table id="fileTable" class="file-table" style="display: none;">
+        <thead>
+            <tr>
+                <th>📄 文件名</th>
+                <th style="width: 200px;">🛠️ 操作</th>
+            </tr>
+        </thead>
+        <tbody id="fileTableBody"></tbody>
+    </table>
+    
+    <div id="emptyState" class="empty" style="display: none;">
+        <h3>📂 暂无文件</h3>
+        <p>还没有上传任何文件，<a href="/upload.html">立即上传</a>第一个文件吧！</p>
     </div>
 
     <script>
-        let fileData = [];
+        let fileList = [];
         
-        // 页面加载时获取文件列表
-        document.addEventListener('DOMContentLoaded', function() {
-            loadFileList();
-        });
-        
-        // 刷新按钮事件
-        document.getElementById('refreshBtn').addEventListener('click', function() {
-            loadFileList();
-        });
+        // 页面加载完成
+        window.onload = function() {
+            console.log('页面已加载');
+            loadFiles();
+            
+            // 绑定刷新按钮
+            document.getElementById('refreshBtn').onclick = function() {
+                console.log('刷新按钮被点击');
+                loadFiles();
+            };
+        };
         
         // 加载文件列表
-        function loadFileList() {
+        function loadFiles() {
+            console.log('开始加载文件');
             showLoading();
             
             fetch('/api/files')
-                .then(response => response.json())
-                .then(data => {
-                    // 后端直接返回文件名数组，如: ["file1.txt", "file2.jpg"]
+                .then(function(response) {
+                    console.log('收到响应:', response.status);
+                    return response.json();
+                })
+                .then(function(data) {
+                    console.log('收到数据:', data);
                     if (Array.isArray(data)) {
-                        fileData = data;
-                        displayFileList(data);
+                        fileList = data;
+                        showFiles(data);
                         updateStats(data.length);
                     } else {
                         showError('数据格式错误');
                     }
                 })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showError('网络错误，请检查服务器连接');
+                .catch(function(error) {
+                    console.error('加载失败:', error);
+                    showError('加载失败: ' + error.message);
                 });
         }
         
@@ -393,105 +203,126 @@
         function showLoading() {
             document.getElementById('loadingDiv').style.display = 'block';
             document.getElementById('errorDiv').style.display = 'none';
-            document.getElementById('fileTableContainer').style.display = 'none';
+            document.getElementById('fileTable').style.display = 'none';
             document.getElementById('emptyState').style.display = 'none';
         }
         
-        // 显示错误信息
+        // 显示错误
         function showError(message) {
+            console.log('显示错误:', message);
             document.getElementById('loadingDiv').style.display = 'none';
             document.getElementById('errorDiv').style.display = 'block';
-            document.getElementById('errorDiv').textContent = '❌ ' + message;
-            document.getElementById('fileTableContainer').style.display = 'none';
+            document.getElementById('errorDiv').innerHTML = '❌ ' + message;
+            document.getElementById('fileTable').style.display = 'none';
             document.getElementById('emptyState').style.display = 'none';
         }
         
         // 显示文件列表
-        function displayFileList(files) {
+        function showFiles(files) {
+            console.log('显示文件，数量:', files.length);
+            
             document.getElementById('loadingDiv').style.display = 'none';
             document.getElementById('errorDiv').style.display = 'none';
             
             if (files.length === 0) {
                 document.getElementById('emptyState').style.display = 'block';
-                document.getElementById('fileTableContainer').style.display = 'none';
-            } else {
-                document.getElementById('emptyState').style.display = 'none';
-                document.getElementById('fileTableContainer').style.display = 'block';
-                
-                const tbody = document.getElementById('fileTableBody');
-                tbody.innerHTML = '';
-                
-                files.forEach(filename => {
-                    const row = tbody.insertRow();
-                    
-                    // 文件名列
-                    const nameCell = row.insertCell(0);
-                    nameCell.innerHTML = `
-                        <span class="file-icon">${getFileIcon(filename)}</span>
-                        <a href="/upload/${filename}" class="file-link" target="_blank">
-                            <strong>${filename}</strong>
-                        </a>
-                    `;
-                    
-                    // 操作列
-                    const actionCell = row.insertCell(1);
-                    actionCell.innerHTML = `
-                        <button class="btn btn-success btn-small" onclick="downloadFile('${filename}')">
-                            📥 下载
-                        </button>
-                        <button class="btn btn-danger btn-small" onclick="deleteFile('${filename}')">
-                            🗑️ 删除
-                        </button>
-                    `;
-                });
+                document.getElementById('fileTable').style.display = 'none';
+                return;
             }
+            
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('fileTable').style.display = 'table';
+            
+            var tbody = document.getElementById('fileTableBody');
+            tbody.innerHTML = '';
+            
+            for (var i = 0; i < files.length; i++) {
+                var filename = files[i];
+                console.log('处理文件:', filename);
+                
+                var row = tbody.insertRow();
+                
+                // 文件名列
+                var nameCell = row.insertCell(0);
+                nameCell.innerHTML = getFileIcon(filename) + ' <a href="/upload/' + 
+                    encodeURIComponent(filename) + '" target="_blank">' + 
+                    escapeHtml(filename) + '</a>';
+                
+                // 操作列
+                var actionCell = row.insertCell(1);
+                actionCell.innerHTML = 
+                    '<button class="download-btn" onclick="downloadFile(\'' + 
+                    filename.replace(/'/g, "\\'") + '\')">📥 下载</button>' +
+                    '<button class="delete-btn" onclick="deleteFile(\'' + 
+                    filename.replace(/'/g, "\\'") + '\')">🗑️ 删除</button>';
+            }
+            
+            console.log('文件列表显示完成');
         }
         
-        // 更新统计信息
+        // 更新统计
         function updateStats(count) {
             document.getElementById('fileCount').textContent = count;
             document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
         }
         
-        // 根据文件扩展名返回图标
+        // 获取文件图标
         function getFileIcon(filename) {
-            const ext = filename.split('.').pop().toLowerCase();
-            const iconMap = {
+            var ext = filename.toLowerCase().split('.').pop();
+            var icons = {
                 'jpg': '🖼️', 'jpeg': '🖼️', 'png': '🖼️', 'gif': '🖼️',
-                'pdf': '📄', 'doc': '📝', 'docx': '📝',
-                'txt': '📄', 'md': '📄',
+                'pdf': '📄', 'doc': '📝', 'docx': '📝', 'txt': '📄',
                 'zip': '🗜️', 'rar': '🗜️',
                 'mp3': '🎵', 'wav': '🎵',
                 'mp4': '🎬', 'avi': '🎬'
             };
-            return iconMap[ext] || '📄';
+            return icons[ext] || '📄';
+        }
+        
+        // HTML转义
+        function escapeHtml(text) {
+            var div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
         
         // 下载文件
         function downloadFile(filename) {
-            window.open(`/api/download?file=${encodeURIComponent(filename)}`, '_blank');
+            console.log('下载文件:', filename);
+            var url = '/api/download?file=' + encodeURIComponent(filename);
+            console.log('下载地址:', url);
+            window.open(url, '_blank');
         }
         
         // 删除文件
         function deleteFile(filename) {
-            if (confirm(`确定要删除文件 "${filename}" 吗？此操作不可恢复！`)) {
-                fetch(`/api/delete?file=${encodeURIComponent(filename)}`, {
-                    method: 'GET'
+            console.log('删除文件:', filename);
+            
+            if (!confirm('确定要删除文件 "' + filename + '" 吗？\n此操作不可恢复！')) {
+                return;
+            }
+            
+            var url = '/api/delete?file=' + encodeURIComponent(filename);
+            console.log('删除地址:', url);
+            
+            fetch(url)
+                .then(function(response) {
+                    console.log('删除响应:', response.status);
+                    return response.json();
                 })
-                .then(response => response.json())
-                .then(data => {
+                .then(function(data) {
+                    console.log('删除结果:', data);
                     if (data.success) {
                         alert('✅ 文件删除成功！');
-                        loadFileList(); // 重新加载文件列表
+                        loadFiles();
                     } else {
                         alert('❌ 删除失败: ' + (data.message || '未知错误'));
                     }
                 })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('❌ 删除失败');
+                .catch(function(error) {
+                    console.error('删除失败:', error);
+                    alert('❌ 删除失败: 网络错误');
                 });
-            }
         }
     </script>
 </body>
