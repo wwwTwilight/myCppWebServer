@@ -141,6 +141,18 @@
             vertical-align: middle;
         }
         
+        .file-link {
+            color: #007bff;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .file-link:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+        
         .loading {
             text-align: center;
             padding: 40px;
@@ -302,7 +314,9 @@
                     const nameCell = row.insertCell(0);
                     nameCell.innerHTML = `
                         <span class="file-icon">${getFileIcon(filename)}</span>
-                        <strong>${filename}</strong>
+                        <a href="/upload/${filename}" class="file-link" target="_blank">
+                            <strong>${filename}</strong>
+                        </a>
                     `;
                 });
             }

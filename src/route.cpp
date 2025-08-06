@@ -41,25 +41,22 @@ int routeWork(HttpMessage& http_message) {
         return 1;
     }
     else {
-        getRoute(http_message);
+        method_not_supported(http_message.client_socket);
         return 0;
     }
 }
 
 int getRoute(HttpMessage& http_message) {
     if(get_routes.contains(http_message.path)) {
-        get_routes[http_message.path](http_message);
-        return 1;
+        return get_routes[http_message.path](http_message);
     } else {
-        not_found(http_message.client_socket);
-        return 0;
+        return get_file(http_message);
     }
 }
 
 int postRoute(HttpMessage& http_message) {
     if(post_routes.contains(http_message.path)) {
-        post_routes[http_message.path](http_message);
-        return 1;
+        return post_routes[http_message.path](http_message);
     } else {
         not_found(http_message.client_socket);
         return 0;
@@ -98,7 +95,46 @@ int get_page(HttpMessage& http_message) {
             send(client_socket, buffer.data(), count, 0);
         }
     }
-    return 0;
+    return 1;
+}
+
+// 泛用获取文件内容
+int get_file(HttpMessage& http_message) {
+    int client_socket = http_message.client_socket;
+    
+    // URL 解码路径
+    string decoded_path = urlDecode(http_message.path);
+    string fullpath = decoded_path[0] == '/' ? decoded_path.substr(1) : decoded_path;
+
+    ifstream ifile(fullpath.data(), ios::binary);
+    vector<char> buffer(4096);
+    if (!ifile) {
+        not_found(client_socket);
+        return 0;
+    }
+    ifile.seekg(0, ios::end);
+    size_t filesize = ifile.tellg();
+    ifile.seekg(0, ios::beg);
+
+	string mime_type = get_mime_type(fullpath);
+
+    // 发送带 Content-Length 的 header，1.1协议特色
+    vector<char> headbuf(512);
+    snprintf(headbuf.data(), headbuf.size(),
+        "HTTP/1.1 200 OK\r\n"
+		"Server: MyPoorWebServer\r\n"
+		"Content-Type: %s\r\n"
+		"Content-Length: %zu\r\n\r\n", mime_type.data(), filesize);
+    send(client_socket, headbuf.data(), strlen(headbuf.data()), 0);
+
+    while (!ifile.eof()) {
+        ifile.read(buffer.data(), buffer.size());
+        streamsize count = ifile.gcount();
+        if (count > 0) {
+            send(client_socket, buffer.data(), count, 0);
+        }
+    }
+    return 1;
 }
 
 // 泛用post
@@ -195,7 +231,7 @@ int post_page(HttpMessage& http_message) {
 		waitpid(pid, NULL, 0);
 	}
 
-    return 0;
+    return 1;
 }
 
 int login_page(HttpMessage& http_message) {

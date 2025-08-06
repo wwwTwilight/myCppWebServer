@@ -152,3 +152,23 @@ string executeCommand(const string& command) {
     pclose(pipe);
     return result;
 }
+
+// URL 解码函数
+string urlDecode(const string& encoded) {
+    string decoded;
+    for (size_t i = 0; i < encoded.length(); ++i) {
+        if (encoded[i] == '%' && i + 2 < encoded.length()) {
+            // 解码 %XX 格式
+            string hex = encoded.substr(i + 1, 2);
+            char c = static_cast<char>(strtol(hex.c_str(), nullptr, 16));
+            decoded += c;
+            i += 2;
+        } else if (encoded[i] == '+') {
+            decoded += ' ';
+        } else {
+            decoded += encoded[i];
+        }
+    }
+
+    return decoded;
+}

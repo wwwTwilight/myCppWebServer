@@ -29,4 +29,6 @@ string file_name_secure(const string& filename);
 
 string executeCommand(const string& command);
 
+string urlDecode(const string& encoded);
+
 #endif // UTILS_H
