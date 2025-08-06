@@ -12,7 +12,7 @@ using namespace std;
 
 setCookie::setCookie() {
     addCookie("time=" + to_string(getTime())); // 添加当前时间戳
-    addCookie("max-age=60");
+    addCookie("max-age=300");
 }
 
 // 注意cookie是name=val的形式
