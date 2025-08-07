@@ -11,7 +11,7 @@
 using namespace std;
 
 int main() {
-    signal(SIGPIPE, SIG_IGN);
+    signal(SIGPIPE, SIG_IGN); // 忽略SIGPIPE信号，避免写入已关闭的socket时导致程序崩溃
     int server_socket = -1;
     unsigned short port = 8080;
     int client_socket = -1;
