@@ -10,9 +10,10 @@
 
 using namespace std;
 
-setCookie::setCookie() {
+setCookie::setCookie(string username) {
     addCookie("time=" + to_string(getTime())); // 添加当前时间戳
     addCookie("max-age=300");
+    addCookie("username=" + username); // 添加用户名
 }
 
 // 注意cookie是name=val的形式

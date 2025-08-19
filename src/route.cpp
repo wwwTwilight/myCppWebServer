@@ -29,7 +29,7 @@ void routeInit() {
     get_routes["/api/download"] = handle_download;
     get_routes["/api/delete"] = handle_delete; // 这里为了方便，不另外开一个delete_route，暂时归类到get_routes
 
-    post_routes["/post.html"] = login_page;
+    post_routes["/post"] = login_page;
     post_routes["/upload"] = file_upload;
 }
 
@@ -279,7 +279,10 @@ int login_page(HttpMessage& http_message) {
         snprintf(headbuf.data(), headbuf.size(), "HTTP/1.1 200 OK\r\n");
         send(client_socket, headbuf.data(), strlen(headbuf.data()), 0);
 
-        setCookie set_cookie;
+        size_t usrEnd = http_message.body.find("&", http_message.body.find("username="));
+        string username = http_message.body.substr(http_message.body.find("username=") + 9, usrEnd - (http_message.body.find("username=") + 9));
+
+        setCookie set_cookie(username);
         send(client_socket, set_cookie.getCookie().data(), set_cookie.getCookie().size(), 0);
 
         open_http_file(client_socket, "/login_success.html");

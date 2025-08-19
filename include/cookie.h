@@ -13,7 +13,7 @@ class setCookie {
 public:
     vector<string> cookies;
 
-    setCookie();
+    setCookie(string username);
 
     void addCookie(const string& cookie);
 
