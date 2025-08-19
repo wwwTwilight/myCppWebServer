@@ -160,10 +160,33 @@
 
     <script>
         let fileList = [];
+        let currentUsername = '';
+        
+        // 从Cookie中获取用户名
+        function getUsernameFromCookie() {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                let cookie = cookies[i].trim();
+                if (cookie.startsWith('username=')) {
+                    return cookie.substring('username='.length);
+                }
+            }
+            return '';
+        }
         
         // 页面加载完成
         window.onload = function() {
             console.log('页面已加载');
+            
+            // 获取当前用户名
+            currentUsername = getUsernameFromCookie();
+            console.log('当前用户:', currentUsername);
+            
+            if (!currentUsername) {
+                showError('未登录或登录已过期，请重新登录');
+                return;
+            }
+            
             loadFiles();
             
             // 绑定刷新按钮
@@ -242,10 +265,10 @@
                 
                 var row = tbody.insertRow();
                 
-                // 文件名列
+                // 文件名列 - 点击文件名直接打开文件
                 var nameCell = row.insertCell(0);
-                nameCell.innerHTML = getFileIcon(filename) + ' <a href="/upload/' + 
-                    encodeURIComponent(filename) + '" target="_blank">' + 
+                var fileUrl = '/upload/' + encodeURIComponent(currentUsername) + '/' + encodeURIComponent(filename);
+                nameCell.innerHTML = getFileIcon(filename) + ' <a href="' + fileUrl + '" target="_blank" style="color: #007bff; text-decoration: underline;">' + 
                     escapeHtml(filename) + '</a>';
                 
                 // 操作列
@@ -289,6 +312,14 @@
         // 下载文件
         function downloadFile(filename) {
             console.log('下载文件:', filename);
+            console.log('当前用户:', currentUsername);
+            
+            if (!currentUsername) {
+                alert('❌ 用户未登录，无法下载文件');
+                return;
+            }
+            
+            // 后端会从cookie中自动获取用户名，无需传递user参数
             var url = '/api/download?file=' + encodeURIComponent(filename);
             console.log('下载地址:', url);
             window.open(url, '_blank');
@@ -297,11 +328,18 @@
         // 删除文件
         function deleteFile(filename) {
             console.log('删除文件:', filename);
+            console.log('当前用户:', currentUsername);
+            
+            if (!currentUsername) {
+                alert('❌ 用户未登录，无法删除文件');
+                return;
+            }
             
             if (!confirm('确定要删除文件 "' + filename + '" 吗？\n此操作不可恢复！')) {
                 return;
             }
             
+            // 后端会从cookie中自动获取用户名，无需传递user参数
             var url = '/api/delete?file=' + encodeURIComponent(filename);
             console.log('删除地址:', url);
             

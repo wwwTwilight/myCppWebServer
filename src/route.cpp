@@ -284,6 +284,11 @@ int login_page(HttpMessage& http_message) {
         size_t usrEnd = http_message.body.find("&", http_message.body.find("username="));
         string username = http_message.body.substr(http_message.body.find("username=") + 9, usrEnd - (http_message.body.find("username=") + 9));
 
+        // 去掉末尾的换行符
+        while(username[username.size() - 1] == '\n' || username[username.size() - 1] == '\r') {
+            username.pop_back();
+        }
+
         setCookie set_cookie(username);
         send(client_socket, set_cookie.getCookie().data(), set_cookie.getCookie().size(), 0);
 
@@ -305,6 +310,10 @@ int login_page(HttpMessage& http_message) {
 int file_upload(HttpMessage& http_message) {
 
     string username = http_message.cookie->cookies["username"];
+
+    while(username[username.size() - 1] == '\n' || username[username.size() - 1] == '\r') {
+        username.pop_back();
+    }
 
     if(verifyUser(http_message) == 0) {
         forbidden(http_message.client_socket);
@@ -339,7 +348,7 @@ int file_upload(HttpMessage& http_message) {
     // 创建upload目录
     struct stat st{};
     if (stat(upload_dir.data(), &st) == -1) {
-        mkdir(upload_dir.data(), 0755);
+        executeCommand("mkdir -p " + upload_dir); // 使用系统命令创建，不会有换行符问题
     }
 
     string fileContent;
@@ -421,7 +430,14 @@ int list_uploads_json(HttpMessage& http_message) {
 
     string username = http_message.cookie->cookies["username"];
 
+    while(username[username.size() - 1] == '\n' || username[username.size() - 1] == '\r') {
+        username.pop_back(); // 去掉末尾的换行符
+    }
+
     string command = "cd upload/" + username + " && ls -1";
+
+    cout << "Executing command: " << command << endl;
+
     string files_output = executeCommand(command);
     
     // 简单的JSON格式
@@ -440,7 +456,9 @@ int list_uploads_json(HttpMessage& http_message) {
         }
     }
     files_json += "]";
-    
+
+    cout << "Files JSON: " << files_json << endl;
+
     string response = 
         "HTTP/1.1 200 OK\r\n"
         "Content-Type: application/json; charset=utf-8\r\n"
@@ -461,6 +479,10 @@ int handle_download(HttpMessage& http_message) {
     string filename = urlDecode(http_message.query.substr(pos));
 
     string username = http_message.cookie->cookies["username"];
+
+    while(username[username.size() - 1] == '\n' || username[username.size() - 1] == '\r') {
+        username.pop_back(); // 去掉末尾的换行符
+    }
 
     string fullpath = "upload/" + username + "/" + filename;
 
@@ -517,6 +539,10 @@ int handle_delete(HttpMessage& http_message) {
 
     string username = http_message.cookie->cookies["username"];
 
+    while(username[username.size() - 1] == '\n' || username[username.size() - 1] == '\r') {
+        username.pop_back(); // 去掉末尾的换行符
+    }
+
     string fullpath = "upload/" + username + "/" + filename;
 
     cout << "Deleting file: " << fullpath << endl;
@@ -545,6 +571,20 @@ int handle_delete(HttpMessage& http_message) {
 }
 
 int handle_register(HttpMessage& http_message) {
-    // 处理用户注册逻辑
+    if (createAccount(http_message)) {
+        string response = 
+            "HTTP/1.1 200 OK\r\n"
+            "Content-Type: application/json; charset=utf-8\r\n"
+            "Connection: close\r\n\r\n"
+            "{\"success\": true, \"message\": \"注册成功\"}";
+        send(http_message.client_socket, response.data(), response.length(), 0);
+    } else {
+        string response = 
+            "HTTP/1.1 400 Bad Request\r\n"
+            "Content-Type: application/json; charset=utf-8\r\n"
+            "Connection: close\r\n\r\n"
+            "{\"success\": false, \"message\": \"注册失败\"}";
+        send(http_message.client_socket, response.data(), response.length(), 0);
+    }
     return 1;
 }

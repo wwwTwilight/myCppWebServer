@@ -20,5 +20,6 @@ extern unique_ptr<sql::Connection> con;
 
 int SQLinit();
 int verifyAccount(HttpMessage& http_message);
+int createAccount(HttpMessage& http_message);
 
 #endif // SQL_H

@@ -69,3 +69,36 @@ int verifyAccount(HttpMessage& http_message) {
 
     return 0; // 验证失败
 }
+
+int createAccount(HttpMessage& http_message){
+    if (http_message.body.find("username") == string::npos || http_message.body.find("password") == string::npos) {
+        return 0;
+    }
+
+    size_t left = http_message.body.find("username") + 9; // 9是"username="的长度
+    size_t right = http_message.body.find('&', left);
+    string username = http_message.body.substr(left, right - left);
+
+    left = http_message.body.find("password") + 9; // 9是"password="的长度
+    right = http_message.body.find('&', left);
+    string password = http_message.body.substr(left, right - left);
+
+    try {
+        unique_ptr<sql::PreparedStatement> pstmt(con->prepareStatement("INSERT INTO users (username, password) VALUES (?, ?)"));
+        pstmt->setString(1, username);
+        pstmt->setString(2, password);
+
+        pstmt->executeUpdate();
+        cout << "用户注册成功: " << username << endl;
+        return 1;
+    } catch (sql::SQLException &e) {
+        cerr << "SQL 错误: " << e.what() << endl;
+        return 0; // 注册失败
+    }
+    catch (...) {
+        cerr << "未知错误" << endl;
+        return 0; // 注册失败
+    }
+
+    return 0; // 注册失败
+}

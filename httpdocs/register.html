@@ -39,6 +39,11 @@
 		margin-bottom: 20px;
 		text-align: left;
 	}
+	.password-input-group {
+		position: relative;
+		display: flex;
+		align-items: center;
+	}
 	label {
 		display: block;
 		margin-bottom: 5px;
@@ -53,6 +58,20 @@
 		font-size: 16px;
 		box-sizing: border-box;
 		transition: border-color 0.3s;
+	}
+	.password-toggle {
+		position: absolute;
+		right: 12px;
+		background: none;
+		border: none;
+		cursor: pointer;
+		color: #666;
+		font-size: 14px;
+		padding: 0;
+		user-select: none;
+	}
+	.password-toggle:hover {
+		color: #333;
 	}
 	input[type="text"]:focus, input[type="password"]:focus {
 		outline: none;
@@ -143,18 +162,22 @@
 		<div class="form-group">
 			<label for="username">用户名：</label>
 			<input type="text" id="username" name="username" required maxlength="20" placeholder="请输入用户名">
-			<div class="password-requirements">用户名长度为3-20个字符</div>
 		</div>
 		
 		<div class="form-group">
 			<label for="password">密码：</label>
-			<input type="password" id="password" name="password" required placeholder="请输入密码">
-			<div class="password-requirements">密码长度至少6个字符</div>
+			<div class="password-input-group">
+				<input type="password" id="password" name="password" required placeholder="请输入密码">
+				<button type="button" class="password-toggle" onclick="togglePassword('password')">👁️</button>
+			</div>
 		</div>
 		
 		<div class="form-group">
 			<label for="password2">确认密码：</label>
-			<input type="password" id="password2" name="password2" required placeholder="请再次输入密码">
+			<div class="password-input-group">
+				<input type="password" id="password2" name="password2" required placeholder="请再次输入密码">
+				<button type="button" class="password-toggle" onclick="togglePassword('password2')">👁️</button>
+			</div>
 			<div id="password-match" class="password-match"></div>
 		</div>
 		
@@ -175,6 +198,20 @@ const password = document.getElementById('password');
 const password2 = document.getElementById('password2');
 const passwordMatch = document.getElementById('password-match');
 const submitBtn = document.getElementById('submit-btn');
+
+// 密码显示/隐藏切换
+function togglePassword(inputId) {
+	const input = document.getElementById(inputId);
+	const button = input.nextElementSibling;
+	
+	if (input.type === 'password') {
+		input.type = 'text';
+		button.textContent = '🙈';
+	} else {
+		input.type = 'password';
+		button.textContent = '👁️';
+	}
+}
 
 function checkPasswordMatch() {
 	if (password2.value === '') {
@@ -197,25 +234,56 @@ function checkPasswordMatch() {
 password.addEventListener('input', checkPasswordMatch);
 password2.addEventListener('input', checkPasswordMatch);
 
-// 表单提交验证
+// 表单提交验证和处理
 document.querySelector('form').addEventListener('submit', function(e) {
-	if (password.value !== password2.value) {
-		e.preventDefault();
-		alert('密码不匹配，请检查后重试！');
-		return false;
-	}
+	e.preventDefault(); // 阻止默认提交
 	
-	if (password.value.length < 6) {
-		e.preventDefault();
-		alert('密码长度至少6个字符！');
-		return false;
-	}
+	// 准备提交数据 - 使用 URL 编码格式，契合后端解析
+	const username = document.getElementById('username').value;
+	const passwordValue = password.value;  // 修复变量名冲突
+	const password2Value = password2.value;  // 修复变量名冲突
 	
-	if (document.getElementById('username').value.length < 3) {
-		e.preventDefault();
-		alert('用户名长度至少3个字符！');
-		return false;
-	}
+	const formData = `username=${encodeURIComponent(username)}&password=${encodeURIComponent(passwordValue)}&password2=${encodeURIComponent(password2Value)}`;
+	
+	// 禁用提交按钮，显示加载状态
+	submitBtn.disabled = true;
+	submitBtn.value = '注册中...';
+	
+	// 发送注册请求
+	fetch('/api/register', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/x-www-form-urlencoded'
+		},
+		body: formData
+	})
+	.then(function(response) {
+		return response.json();
+	})
+	.then(function(data) {
+		console.log('注册响应:', data);
+		
+		if (data.success) {
+			// 注册成功
+			alert('🎉 注册成功！即将跳转到登录页面');
+			setTimeout(function() {
+				window.location.href = '/post.html';
+			}, 1000);
+		} else {
+			// 注册失败
+			alert('❌ 注册失败：' + (data.message || '未知错误'));
+			// 恢复按钮状态
+			submitBtn.disabled = false;
+			submitBtn.value = '注册';
+		}
+	})
+	.catch(function(error) {
+		console.error('注册请求失败:', error);
+		alert('❌ 网络错误，请稍后重试');
+		// 恢复按钮状态
+		submitBtn.disabled = false;
+		submitBtn.value = '注册';
+	});
 });
 </script>
 </body>
