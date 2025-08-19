@@ -302,6 +302,8 @@ int login_page(HttpMessage& http_message) {
 
 int file_upload(HttpMessage& http_message) {
 
+    string username = http_message.cookie->cookies["username"];
+
     if(verifyUser(http_message) == 0) {
         forbidden(http_message.client_socket);
         return 0;
@@ -331,10 +333,11 @@ int file_upload(HttpMessage& http_message) {
 
     // cout << "Boundary: " << boundary << endl;
 
+    string upload_dir = "upload/" + username;
     // 创建upload目录
     struct stat st{};
-    if (stat("upload", &st) == -1) {
-        mkdir("upload", 0755);
+    if (stat(upload_dir.data(), &st) == -1) {
+        mkdir(upload_dir.data(), 0755);
     }
 
     string fileContent;
@@ -385,7 +388,7 @@ int file_upload(HttpMessage& http_message) {
 
     fileContent = body.substr(left, right - left);
 
-    ofstream ofile("upload/" + filename, ios::binary);
+    ofstream ofile("upload/" + username + "/" + filename, ios::binary);
     if (!ofile) {
         error_message("Failed to open file for writing");
         return 0;
@@ -413,8 +416,10 @@ int file_upload(HttpMessage& http_message) {
 
 int list_uploads_json(HttpMessage& http_message) {
     int client_socket = http_message.client_socket;
-    
-    string command = "cd upload && ls -1";
+
+    string username = http_message.cookie->cookies["username"];
+
+    string command = "cd upload/" + username + " && ls -1";
     string files_output = executeCommand(command);
     
     // 简单的JSON格式
