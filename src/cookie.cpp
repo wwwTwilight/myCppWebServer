@@ -11,9 +11,9 @@
 using namespace std;
 
 setCookie::setCookie(string username) {
-    addCookie("time=" + to_string(getTime())); // 添加当前时间戳
-    addCookie("max-age=300");
-    addCookie("username=" + username); // 添加用户名
+    addCookie("time=" + to_string(getTime()) + ";Path=/"); // 添加当前时间戳
+    addCookie("max-age=300;Path=/");
+    addCookie("username=" + username + ";Path=/"); // 添加用户名
 }
 
 // 注意cookie是name=val的形式

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="icon" href="data:;base64,=">
+	<title>用户注册</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+	body {
+		min-height: 100vh;
+		margin: 0;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		font-family: 'Segoe UI', 'Arial', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+		background: #f7f7f7;
+	}
+	.register-container {
+		background: #fff;
+		border-radius: 12px;
+		box-shadow: 0 2px 16px 0 rgba(0,0,0,0.06);
+		padding: 36px 28px;
+		min-width: 260px;
+		max-width: 90vw;
+		text-align: center;
+		opacity: 0;
+		transform: translateY(40px);
+		animation: fadeInUp 0.7s cubic-bezier(.23,1.02,.64,1) 0.1s forwards;
+	}
+	h2 {
+		text-align: center;
+		color: #222;
+		margin-bottom: 30px;
+		font-size: 2em;
+		font-weight: 600;
+		letter-spacing: 1px;
+	}
+	.form-group {
+		margin-bottom: 20px;
+		text-align: left;
+	}
+	label {
+		display: block;
+		margin-bottom: 5px;
+		color: #555;
+		font-weight: bold;
+	}
+	input[type="text"], input[type="password"] {
+		width: 100%;
+		padding: 12px;
+		border: 2px solid #ddd;
+		border-radius: 5px;
+		font-size: 16px;
+		box-sizing: border-box;
+		transition: border-color 0.3s;
+	}
+	input[type="text"]:focus, input[type="password"]:focus {
+		outline: none;
+		border-color: #667eea;
+	}
+	.password-requirements {
+		font-size: 12px;
+		color: #666;
+		margin-top: 5px;
+		text-align: left;
+	}
+	.password-match {
+		font-size: 12px;
+		margin-top: 5px;
+		text-align: left;
+	}
+	.password-match.valid {
+		color: #4CAF50;
+	}
+	.password-match.invalid {
+		color: #f44336;
+	}
+	.button-group {
+		display: flex;
+		gap: 10px;
+	}
+	input[type="submit"], input[type="reset"] {
+		flex: 1;
+		padding: 12px;
+		border: none;
+		border-radius: 5px;
+		font-size: 16px;
+		cursor: pointer;
+		transition: background-color 0.3s;
+	}
+	input[type="submit"] {
+		background: #667eea;
+		color: #fff;
+		font-weight: 500;
+	}
+	input[type="submit"]:hover {
+		background: #5a6fd8;
+	}
+	input[type="submit"]:disabled {
+		background: #ccc;
+		cursor: not-allowed;
+	}
+	input[type="reset"] {
+		background: #f0f0f0;
+		color: #333;
+	}
+	input[type="reset"]:hover {
+		background: #e0e0e0;
+	}
+	.links {
+		text-align: center;
+		margin-top: 20px;
+	}
+	.links a {
+		color: #667eea;
+		text-decoration: none;
+	}
+	.links a:hover {
+		text-decoration: underline;
+	}
+	@media (max-width: 500px) {
+		.register-container { 
+			padding: 16px 4px; 
+			min-width: unset; 
+		}
+		h2 { 
+			font-size: 1.2em; 
+		}
+	}
+	@keyframes fadeInUp {
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+</style>
+</head>
+<body>
+<div class="register-container">
+	<h2>📝 用户注册</h2>
+	<h3 style="font-weight: normal; color: #666; margin-bottom: 30px;">创建您的新账户</h3>
+	<form action="/api/register" method="POST" autocomplete="off">
+		<div class="form-group">
+			<label for="username">用户名：</label>
+			<input type="text" id="username" name="username" required maxlength="20" placeholder="请输入用户名">
+			<div class="password-requirements">用户名长度为3-20个字符</div>
+		</div>
+		
+		<div class="form-group">
+			<label for="password">密码：</label>
+			<input type="password" id="password" name="password" required placeholder="请输入密码">
+			<div class="password-requirements">密码长度至少6个字符</div>
+		</div>
+		
+		<div class="form-group">
+			<label for="password2">确认密码：</label>
+			<input type="password" id="password2" name="password2" required placeholder="请再次输入密码">
+			<div id="password-match" class="password-match"></div>
+		</div>
+		
+		<div class="button-group">
+			<input type="submit" id="submit-btn" value="注册">
+			<input type="reset" value="重置">
+		</div>
+	</form>
+	
+	<div class="links">
+		<p>已有账户？<a href="/post.html">立即登录</a></p>
+	</div>
+</div>
+
+<script>
+// 密码确认验证
+const password = document.getElementById('password');
+const password2 = document.getElementById('password2');
+const passwordMatch = document.getElementById('password-match');
+const submitBtn = document.getElementById('submit-btn');
+
+function checkPasswordMatch() {
+	if (password2.value === '') {
+		passwordMatch.textContent = '';
+		passwordMatch.className = 'password-match';
+		return;
+	}
+	
+	if (password.value === password2.value) {
+		passwordMatch.textContent = '✓ 密码匹配';
+		passwordMatch.className = 'password-match valid';
+		submitBtn.disabled = false;
+	} else {
+		passwordMatch.textContent = '✗ 密码不匹配';
+		passwordMatch.className = 'password-match invalid';
+		submitBtn.disabled = true;
+	}
+}
+
+password.addEventListener('input', checkPasswordMatch);
+password2.addEventListener('input', checkPasswordMatch);
+
+// 表单提交验证
+document.querySelector('form').addEventListener('submit', function(e) {
+	if (password.value !== password2.value) {
+		e.preventDefault();
+		alert('密码不匹配，请检查后重试！');
+		return false;
+	}
+	
+	if (password.value.length < 6) {
+		e.preventDefault();
+		alert('密码长度至少6个字符！');
+		return false;
+	}
+	
+	if (document.getElementById('username').value.length < 3) {
+		e.preventDefault();
+		alert('用户名长度至少3个字符！');
+		return false;
+	}
+});
+</script>
+</body>
+</html>

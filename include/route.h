@@ -29,5 +29,6 @@ int list_uploads_json(HttpMessage& http_message);
 int get_file(HttpMessage& http_message);
 int handle_download(HttpMessage& http_message);
 int handle_delete(HttpMessage& http_message);
+int handle_register(HttpMessage& http_message);
 
 #endif // ROUTER_H

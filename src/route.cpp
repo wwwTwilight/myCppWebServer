@@ -3,6 +3,7 @@
 #include "../include/error.h"
 #include "../include/httpMes.h"
 #include "../include/cookie.h"
+#include "../include/sql.h"
 #include <fstream>
 #include <sstream>
 #include <sys/stat.h>
@@ -28,9 +29,11 @@ void routeInit() {
     get_routes["/api/files"] = list_uploads_json;
     get_routes["/api/download"] = handle_download;
     get_routes["/api/delete"] = handle_delete; // 这里为了方便，不另外开一个delete_route，暂时归类到get_routes
+    get_routes["/register.html"] = get_page;
 
-    post_routes["/post"] = login_page;
-    post_routes["/upload"] = file_upload;
+    post_routes["/api/post"] = login_page;
+    post_routes["/api/upload"] = file_upload;
+    post_routes["/api/register"] = handle_register;
 }
 
 int routeWork(HttpMessage& http_message) {
@@ -272,8 +275,7 @@ int login_page(HttpMessage& http_message) {
         return 0;
     }
 
-    if(http_message.body.find("username=admin") != string::npos &&
-       http_message.body.find("password=123456") != string::npos) {
+    if(verifyAccount(http_message)) {
         // 登录成功
         vector<char> headbuf(256);
         snprintf(headbuf.data(), headbuf.size(), "HTTP/1.1 200 OK\r\n");
@@ -458,7 +460,9 @@ int handle_download(HttpMessage& http_message) {
 
     string filename = urlDecode(http_message.query.substr(pos));
 
-    string fullpath = "upload/" + filename;
+    string username = http_message.cookie->cookies["username"];
+
+    string fullpath = "upload/" + username + "/" + filename;
 
     cout << "Downloading file: " << fullpath << endl;
 
@@ -511,7 +515,9 @@ int handle_delete(HttpMessage& http_message) {
 
     string filename = urlDecode(http_message.query.substr(pos));
 
-    string fullpath = "upload/" + filename;
+    string username = http_message.cookie->cookies["username"];
+
+    string fullpath = "upload/" + username + "/" + filename;
 
     cout << "Deleting file: " << fullpath << endl;
 
@@ -535,5 +541,10 @@ int handle_delete(HttpMessage& http_message) {
     
     send(http_message.client_socket, response.data(), response.length(), 0);
 
+    return 1;
+}
+
+int handle_register(HttpMessage& http_message) {
+    // 处理用户注册逻辑
     return 1;
 }

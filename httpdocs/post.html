@@ -118,25 +118,29 @@
 </style>
 </head>
 <body>
-	<div class="login-container">
-			<h2>🔐 用户登录</h2>
-			<h3 style="font-weight: normal; color: #666; margin-bottom: 30px;">登陆在5分钟之内有效</h3>
-			<form action="post" method="POST">
-				<div class="form-group">
-					<label for="username">用户名：</label>
-					<input type="text" id="username" name="username" required maxlength="20" placeholder="请输入用户名">
-				</div>
-				
-				<div class="form-group">
-					<label for="password">密码：</label>
-					<input type="password" id="password" name="password" required placeholder="请输入密码">
-				</div>
-				
-				<div class="button-group">
-					<input type="submit" value="登录">
-					<input type="reset" value="重置">
-				</div>
-			</form>
+<div class="login-container">
+	<h2>🔐 用户登录</h2>
+	<h3 style="font-weight: normal; color: #666; margin-bottom: 30px;">登陆在5分钟之内有效</h3>
+	<form action="/api/post" method="POST">
+		<div class="form-group">
+			<label for="username">用户名：</label>
+			<input type="text" id="username" name="username" required maxlength="20" placeholder="请输入用户名">
 		</div>
+		
+		<div class="form-group">
+			<label for="password">密码：</label>
+			<input type="password" id="password" name="password" required placeholder="请输入密码">
+		</div>
+		
+		<div class="button-group">
+			<input type="submit" value="登录">
+			<input type="reset" value="重置">
+		</div>
+	</form>
+	
+	<div class="links">
+		<p>还没有账户？<a href="/register.html">立即注册</a></p>
+	</div>
+</div>
 	</body>
 </html>

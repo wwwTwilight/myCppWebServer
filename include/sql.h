@@ -11,6 +11,7 @@
 #include <cppconn/statement.h>
 #include <cppconn/resultset.h>
 #include <cppconn/prepared_statement.h>
+#include "httpMes.h"
 
 using namespace std;
 
@@ -18,7 +19,6 @@ extern sql::mysql::MySQL_Driver *driver;
 extern unique_ptr<sql::Connection> con;
 
 int SQLinit();
-
-
+int verifyAccount(HttpMessage& http_message);
 
 #endif // SQL_H
