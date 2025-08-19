@@ -1,9 +1,9 @@
 CXX = g++
-CXXFLAGS = -Wall -Wextra -std=c++20
+CXXFLAGS = -Wall -Wextra -std=c++20 -I/usr/include -I/usr/include/cppconn -L/usr/lib/x86_64-linux-gnu -lmysqlcppconn
 
 TARGET = httpd
 
-SOURCES = main.cpp src/route.cpp src/cookie.cpp src/error.cpp src/httpMes.cpp src/requestHandler.cpp src/utils.cpp src/webserverSet.cpp
+SOURCES = main.cpp src/sql.cpp src/route.cpp src/cookie.cpp src/error.cpp src/httpMes.cpp src/requestHandler.cpp src/utils.cpp src/webserverSet.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
 
 all : $(TARGET)

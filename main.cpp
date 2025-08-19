@@ -7,6 +7,7 @@
 #include "include/webserverSet.h"
 #include "include/requestHandler.h"
 #include "include/route.h"
+#include "include/sql.h"
 
 using namespace std;
 
@@ -20,6 +21,7 @@ int main() {
 
     server_socket = startServer(port);
 
+    SQLinit();
     routeInit(); // 初始化路由表
 
     while (1) {
