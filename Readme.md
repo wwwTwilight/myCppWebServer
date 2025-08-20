@@ -36,7 +36,7 @@
 - 🎨 **现代化界面** - 响应式设计，支持拖拽上传
 - 🛡️ **安全防护** - 路径遍历防护、文件名过滤、权限验证
 - 📊 **实时反馈** - 文件操作进度显示与状态提示
-- 💾 **MySQL管理用户** - 使用MySQL数据库存储用户信息和文件元数据
+- 💾 **MySQL管理用户** - 使用MySQL数据库存储用户信息
 
 ## 📁 项目架构
 
@@ -142,7 +142,7 @@ mysql --version
 dpkg -l | grep libmysqlcppconn-dev
 ```
 
-如果没有安装，请访问https://dev.mysql.com/downloads/connector/cpp/，并选择下载符合您操作系统的安装程序并完成安装
+如果没有安装，请访问[MySQL Connector/C++](https://dev.mysql.com/downloads/connector/cpp/)，并选择下载符合您操作系统的安装程序并完成安装
 
 这之后就是一个比较麻烦的点了，需要确定安装之后的 MySQL Connector/C++ 头文件和库函数的路径。我们先来找头文件，我们需要找到这几个头文件，
 
