@@ -197,6 +197,16 @@ INSERT INTO `netDisk`.`users` (`id`, `username`, `password`) VALUES ('1', 'admin
 INSERT INTO `netDisk`.`users` (`id`, `username`, `password`) VALUES ('2', 'test', '123456');
 
 ```
+
+最后在 `src/sql.cpp` 中的 `sqlInit()` 函数中修改数据库连接信息，确保用户名和密码与你创建的数据库用户一致：
+
+```cpp
+const string host = "tcp://127.0.0.1:3306"; // 这是默认端口，有需要可以改，一般不用改
+const string user = "root"; // 这里的用户名需要和你创建的数据库用户一致
+const string password = "Password123#@!";  // 密码要改成你的用户对应的密码
+const string database = "netDisk"; // 数据库名要匹配，和刚刚创建的名称要一致
+```
+
 ### ⚡ 运行
 ```bash
 # 1. 克隆项目
