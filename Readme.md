@@ -2,22 +2,41 @@
 
 > 一个轻量级、高性能的 C++ HTTP Web 服务器，专为学习和实践而设计
 
-[![Language](https://img.shields.io/badge/Language-C++20-blue.svg)](https://en.cppreference.com/w/cpp/20)
-[![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS-lightgrey.svg)](https://github.com/wwwTwilight/myCppWebServer)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+## 写在开头
 
-一个从零开始实现的 C++ HTTP Web 服务器，支持多线程并发、用户认证、文件管理等功能。项目名为 "MyPoorWebServer"，寓意虽然简陋但功能完整，是学习网络编程和 Web 服务器原理的绝佳实践项目。
+这是本人这段时间从零开始学习的一个 C++ HTTP Web 服务器项目，旨在学习C++、计算机网络、操作系统、数据库和后端开发的基本原理，由于对于web开发和C++的了解还很浅薄，所以这个项目的代码可能会有很多不规范和不优雅的地方，在此希望各位大佬多多指教和批评指正。
+
+同时特别鸣谢这位大佬[@阿秀](https://github.com/forthespada)，本人就是在阅读完这个仓库[MyPoorWebServer](https://github.com/forthespada/MyPoorWebServer)的文档和代码后，才对 C++ Web 服务器的实现有了更深入的理解，十分感谢大佬的开源付出。
+
+也要特别感谢Copilot的帮助，它在我编写代码和文档时提供了很多有用的建议和提示，除了在后端webserver开发过程中教会我相关知识，由于本人不会前端的技术，同时想要快速实现前端功能，所以**本项目的所有的前端代码都是由Copilot自动生成的**，虽然有些代码可能不太符合规范，但他节约了我前端开发的时间和精力，让我可以更专注于后端逻辑的实现，十分感谢Copilot的帮助。
+
+同时，也感谢ChatGPT和DeepSeek等大模型，在开发过程中教会了我很多技术细节和实现思路，帮助我更好地理解和应用 C++ 的各种特性，也感谢我在互联网上找到的各种相关资料或者博客，内容过多无法一一列举，感谢他们为我的学习和开发提供了很大的帮助。[这是本人写的开发笔记，不过内容不完善](https://wwwtwilight.github.io/posts/cppwebserverdeveloplog/cppwebserverdeveloplog/)
+
+最后，感谢你阅读这个项目的文档，希望你能从中学到一些有用的知识，也欢迎你参与到这个项目中来，一起完善和优化它！
+
+## 项目简介
+
+这是一个类似网盘的项目，实现了基础的登陆注册，文件上传、预览、下载和删除等功能，支持多用户分目录存储
+
+![主页截图](readmePics/主页截图.png)
+
+![登陆注册](readmePics/登陆注册.png)
+
+![文件上传](readmePics/文件上传.png)
+
+![文件管理](readmePics/文件管理.png)
+
+功能相对简单，但是包含了多种技术的综合应用，适合用来学习和实践 C++ Web 开发的基本原理。
 
 ## ✨ 核心特性
 
-- 🚀 **高性能多线程** - 基于线程池的并发请求处理
-- 🌐 **完整 HTTP/1.1** - 标准 HTTP 协议实现，支持持久连接
-- 🔐 **安全认证系统** - Cookie 会话管理与用户权限控制
+- 🚀 **多线程编程** - 每一个用户访问网站都将被分配到一个独立的线程进行处理，实现多个用户同时访问
+- 🔐 **登陆认证系统** - 使用Cookie实现持久化登陆，登陆后五分钟内可以对文件管理
 - 📁 **分用户文件管理** - 独立用户空间的文件上传、预览、下载
 - 🎨 **现代化界面** - 响应式设计，支持拖拽上传
-- 📡 **RESTful API** - 标准化 JSON 接口设计
 - 🛡️ **安全防护** - 路径遍历防护、文件名过滤、权限验证
 - 📊 **实时反馈** - 文件操作进度显示与状态提示
+- 💾 **MySQL管理用户** - 使用MySQL数据库存储用户信息和文件元数据
 
 ## 📁 项目架构
 
@@ -30,7 +49,7 @@ MyPoorWebServerInCpp/
 │   ├── webserverSet.h             #   ⚙️  服务器配置管理
 │   ├── requestHandler.h           #   🔄 HTTP 请求处理器
 │   ├── route.h                    #   🛤️  路由系统定义
-│   ├── httpMes.h                  #   📨 HTTP 消息解析
+│   ├── httpMes.h                  #   📨 HTTP 消息解析与存储
 │   ├── cookie.h                   #   🍪 Cookie 会话管理
 │   ├── utils.h                    #   🛠️  通用工具函数
 │   ├── error.h                    #   ❌ 错误处理定义
@@ -39,8 +58,8 @@ MyPoorWebServerInCpp/
 │   ├── webserverSet.cpp           #   ⚙️  服务器核心配置
 │   ├── requestHandler.cpp         #   🔄 请求分发处理
 │   ├── route.cpp                  #   🛤️  路由逻辑实现
-│   ├── httpMes.cpp                #   📨 HTTP 协议解析
-│   ├── cookie.cpp                 #   🍪 会话状态管理
+│   ├── httpMes.cpp                #   📨 HTTP 协议解析与存储实现
+│   ├── cookie.cpp                 #   🍪 Cookie 管理
 │   ├── utils.cpp                  #   🛠️  工具函数实现
 │   ├── error.cpp                  #   ❌ 错误响应处理
 │   └── sql.cpp                    #   🗄️  用户数据管理
@@ -52,9 +71,9 @@ MyPoorWebServerInCpp/
 │   ├── files.html                 #   📂 文件管理中心
 │   ├── about.html                 #   ℹ️  项目介绍页面
 │   └── contact.html               #   📞 联系信息页面
-└── 📂 upload/                     # 💾 用户文件存储
-    ├── admin/                     #   👤 管理员文件目录
-    ├── test/                      #   🧪 测试用户目录
+└── 📂 upload/                     # 💾 用户文件存储（本文件夹项目中没有，但是用户上传文件时会自动生成）
+    ├── admin/                     #   👤 测试用户目录1
+    ├── test/                      #   👤 测试用户目录2
     └── [username]/                #   👥 动态用户目录
 ```
 
@@ -68,9 +87,9 @@ MyPoorWebServerInCpp/
 
 ### 👤 用户认证与管理  
 ```cpp
-// 默认测试账户
+// 默认测试账户，这里根据你的数据库中的内容进行调整
 用户名: admin    密码: 123456
-用户名: test     密码: password
+用户名: test     密码: 123456
 ```
 - 🔐 安全的密码验证机制
 - 🍪 基于 Cookie 的会话管理
@@ -83,9 +102,9 @@ MyPoorWebServerInCpp/
 - **实时管理**: 上传、预览、下载、删除一体化
 - **格式支持**: 图片、文档、视频、压缩包等多格式
 
-### 📡 RESTful API 接口
+### 📡 API 接口
 
-| 端点 | 方法 | 功能描述 | 参数 | 权限 |
+| 路由 | 方法 | 功能描述 | 参数 | 权限 |
 |------|------|----------|------|------|
 | `/api/register` | POST | 用户注册 | `username`, `password` | 公开 |
 | `/api/post` | POST | 用户登录 | `username`, `password` | 公开 |
@@ -98,13 +117,87 @@ MyPoorWebServerInCpp/
 ## 🚀 快速开始
 
 ### 📋 环境要求
-- **操作系统**: Linux / macOS
-- **编译器**: GCC 7.0+ (支持 C++17/20)
-- **依赖**: 标准 C++ 库 (无第三方依赖)
+- **操作系统**: Linux（本文以Ubuntu为准） / macOS（不推荐，本人使用macOS没有配置成功，如需在mac上运行请自行搜索相关资料）
+- **编译器**: GCC 7.0+ (需支持 C++20)
+- **依赖**: 标准 C++ 库 MySQL/connect（配置详情见后文运行部分）
 - **内存**: 最低 256MB RAM
 - **存储**: 至少 50MB 可用空间
 
-### ⚡ 一键启动
+### 🛠️ 配置内容
+
+#### MySQL Connector/C++ 配置
+
+需要你手动配置，主要是MySQL部分，我们需要使用MySQL提供的 C++ 连接器来操作数据库，我们需要先下载相关的内容，然后在`Makefile`文件中进行连接编译。
+
+首先需要确定你的电脑是否有MySQL，如果没有请先安装MySQL，这个自己解决，本文默认你已经安装好了MySQL，并且可以正常使用。
+
+如果你不确定，可以在终端输入以下命令来检查是否安装了MySQL：
+```bash
+mysql --version
+```
+有看到版本号说明已经安装好了MySQL，可以正式开始配置。
+
+首先需要确定是否有安装安装 MySQL Connector/C++，可以在终端输入以下命令来检查：
+```bash
+dpkg -l | grep libmysqlcppconn-dev
+```
+
+如果没有安装，请访问https://dev.mysql.com/downloads/connector/cpp/，并选择下载符合您操作系统的安装程序并完成安装
+
+这之后就是一个比较麻烦的点了，需要确定安装之后的 MySQL Connector/C++ 头文件和库函数的路径。我们先来找头文件，我们需要找到这几个头文件，
+
+```cpp
+#include <mysql_driver.h>
+#include <mysql_connection.h>
+#include <cppconn/statement.h>
+#include <cppconn/resultset.h>
+#include <cppconn/prepared_statement.h>
+```
+
+本人而言，头文件在 `/usr/include` 和 `/usr/include/cppconn` 目录下，这里请你记住这两个路径，然后在 `Makefile` 中的第二行`-I`后面添加这两个路径，如下
+```makefile
+CXXFLAGS = -Wall -Wextra -std=c++20 -I/usr/include -I/usr/include/cppconn -L/usr/lib/x86_64-linux-gnu -lmysqlcppconn
+```
+
+随后我们需要找到 MySQL Connector/C++ 的库文件路径，本人的路径在 `/usr/lib/x86_64-linux-gnu`下的`libmysqlcppconn.so`，如果没找到，可以在终端输入以下命令来查找：
+```bash
+find /usr/lib -name "libmysqlcppconn.so"
+# 这里的后缀名.so是Linux下的动态链接库文件后缀名，如果你是macOS系统，可能是.dylib
+```
+
+随后也像上面一样，在 `Makefile` 中的第二行`-L`后面添加这个路径并且在`-l`后面添加mysqlcppconn，如下所示：
+```makefile
+CXXFLAGS = -Wall -Wextra -std=c++20 -I/usr/include -I/usr/include/cppconn -L/usr/lib/x86_64-linux-gnu -lmysqlcppconn
+```
+
+如果你的库函数和头文件恰好和我的一致，那就皆大欢喜，你不用更改`Makefile` 中的内容，直接进入下一步。
+
+#### MySQL 数据库配置
+
+本项目使用到了 MySQL 数据库来存储用户信息和文件元数据，需要先创建一个数据库和用户表。
+
+如果你使用的是 MySQL Workbench，可以按照我这样配置
+
+![MySQL Workbench 设置表](readmePics/MySQLWorkbench设置表.png)
+
+如果你使用的是命令行，可以执行以下 SQL 语句来创建数据库和表（本文默认你已经登陆了对应的账户）：
+
+```sql
+CREATE SCHEMA `netDisk` ;
+
+CREATE TABLE `netDisk`.`users` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `username` VARCHAR(45) NOT NULL,
+  `password` VARCHAR(45) NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE,
+  UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE);
+
+INSERT INTO `netDisk`.`users` (`id`, `username`, `password`) VALUES ('1', 'admin', '123456');
+INSERT INTO `netDisk`.`users` (`id`, `username`, `password`) VALUES ('2', 'test', '123456');
+
+```
+### ⚡ 运行
 ```bash
 # 1. 克隆项目
 git clone https://github.com/wwwTwilight/myCppWebServer.git
@@ -118,7 +211,7 @@ make
 # 或者使用 make 命令
 make run
 
-# 🎉 打开浏览器访问: http://localhost:8080
+# 🎉 打开浏览器访问: http://localhost:8080 或 http://127.0.0.1:8080
 ```
 
 ### 🔧 编译选项
@@ -127,7 +220,7 @@ make           # 标准编译
 make rebuild   # 重新编译
 make clean     # 清理编译文件
 make info      # 查看项目信息
-make debug     # 调试版本编译
+make run       # 运行
 ```
 
 ## 📖 使用指南
@@ -148,7 +241,7 @@ http://localhost:8080/register.html
 # 用户登录  
 http://localhost:8080/post.html
 - 默认账户: admin / 123456
-- 登录成功获得文件管理权限
+- 登录成功后能够进行文件管理
 ```
 
 ### 📤 3. 文件上传
@@ -193,10 +286,6 @@ while (true) {
     std::thread client_thread(handle_request, client_socket);
     client_thread.detach();  // 分离线程，自动清理
 }
-
-// 线程安全的文件操作
-std::mutex file_mutex;
-std::lock_guard<std::mutex> lock(file_mutex);
 ```
 
 ### 📨 HTTP 协议处理
@@ -227,10 +316,7 @@ string secure_filename(const string& filename) {
 ### 🌐 服务器配置
 ```cpp
 // main.cpp 中可修改的配置
-const int PORT = 8080;              // 服务器端口
-const string ROOT_DIR = "httpdocs"; // 静态文件根目录  
-const string UPLOAD_DIR = "upload"; // 文件上传目录
-const int MAX_THREADS = 100;        // 最大并发线程数
+unsigned short port = 8080; // 服务器端口，可以修改为其他端口
 ```
 
 ### 📋 支持的文件类型
@@ -245,18 +331,6 @@ const int MAX_THREADS = 100;        // 最大并发线程数
 | 🎬 **视频** | `.mp4`, `.avi` | `video/*` | 视频播放 |
 | 📦 **压缩** | `.zip`, `.rar` | `application/octet-stream` | 强制下载 |
 
-### 🔧 自定义配置
-```bash
-# 修改端口号
-vim main.cpp  # 找到 PORT 常量
-
-# 修改上传限制
-vim src/route.cpp  # 修改文件大小检查
-
-# 添加新的 MIME 类型
-vim src/utils.cpp  # 在 get_mime_type() 函数中添加
-```
-
 ## 🛠️ 开发扩展
 
 ### 🛤️ 添加新路由
@@ -264,20 +338,16 @@ vim src/utils.cpp  # 在 get_mime_type() 函数中添加
 // 在 src/route.cpp 的 routeInit() 函数中添加
 void routeInit() {
     // GET 路由
-    get_routes["/api/new-endpoint"] = your_get_handler;
-    
-    // POST 路由  
-    post_routes["/api/new-action"] = your_post_handler;
-    
-    // 带权限验证的路由
-    get_routes["/protected-page"] = get_page_with_verify;
+    get_routes["/yourRoute"] = yourFunction;
+
+    // POST 路由
+    post_routes["/yourRoute"] = yourFunction;
+
 }
 
 // 实现处理函数
-int your_get_handler(HttpMessage& http_message) {
-    // 处理 GET 请求
-    string response = build_json_response(data);
-    send_response(http_message.client_socket, response);
+int yourFunction(HttpMessage& http_message) {
+    // 处理请求
     return 1;
 }
 ```
@@ -309,62 +379,32 @@ string get_mime_type(const string& path) {
 }
 ```
 
-### 🗄️ 数据库集成示例
-```cpp
-// 在 src/sql.cpp 中实现数据库操作
-class DatabaseManager {
-public:
-    bool createUser(const string& username, const string& password);
-    bool authenticateUser(const string& username, const string& password);
-    vector<FileInfo> getUserFiles(const string& username);
-    
-private:
-    sqlite3* db;  // 或者 MySQL 连接
-};
-```
-
 ## 🚧 开发路线图
 
-### 🎯 当前版本 (v1.0)
-- ✅ 基础 HTTP 服务器实现
-- ✅ 多线程并发处理
-- ✅ 用户认证系统
-- ✅ 分用户文件管理
-- ✅ 现代化 Web 界面
+### 🎯 Abydos
+主要实现了将[MyPoorWebServer](https://github.com/forthespada/MyPoorWebServer)的代码从C使用C++进行重构，使用了更加先进的C++特性和标准库，提升了代码的可读性和可维护性。目前可见于master分支，已停止维护与更新。
 
-### 🔮 下一版本 (v2.0)
-- 🔲 **MySQL 数据库集成**
-  - 用户信息持久化存储
-  - 文件元数据管理
-  - 操作日志记录
+### 🔮 Millennium (见Aug 7, 2025的“readme更新”提交)
+- 实现了一个简单的用户认证系统，支持登录
+- 支持单个用户的验证以及存储文件，用户可以上传、预览、下载和删除服务器文件
+- 实现了一个简单的前端界面，支持文件上传、预览和下载等功能
+- 支持多线程并发处理，能够同时处理多个用户的请求
+- 实现了一个简单的路由系统，支持静态文件和动态请求的处理
+- 支持基本的错误处理
 
-- 🔲 **高级文件系统**
-  - 文件夹层次管理
-  - 批量文件操作
-  - 文件重命名功能
-  - 文件分享链接
-
-- 🔲 **并发安全优化**
-  - 文件读写锁机制
-  - 线程池管理优化
-  - 内存使用优化
-
-### 🌟 长期规划 (v3.0+)
-- 🔲 **HTTPS 安全连接**
-- 🔲 **WebSocket 实时通信**
-- 🔲 **Redis 缓存系统**
-- 🔲 **Docker 容器化部署**
-- 🔲 **RESTful API 文档**
-- 🔲 **单元测试覆盖**
+### 🌟 Trinity (当前版本)
+- 使用MySQL数据库存储用户信息
+- 实现了用户注册和登录功能，完善了Cookie持久化登录
+- 实现了分用户目录的文件管理，用户可以在自己的目录下进行文件操作
+- 完善了前端界面，支持拖拽上传、文件预览
 
 ## 🤝 贡献指南
 
 ### 📝 提交代码
-1. Fork 项目到你的 GitHub
-2. 创建特性分支: `git checkout -b feature-name`
-3. 提交更改: `git commit -m 'Add some feature'`
-4. 推送分支: `git push origin feature-name`
-5. 提交 Pull Request
+- 请确保代码符合 C++20 标准
+- 使用清晰的提交信息描述变更内容
+- 提交前运行 `make` 确保编译通过
+- 欢迎提交 Pull Request
 
 ### 🐛 报告问题
 - 使用 GitHub Issues 报告 Bug
@@ -376,16 +416,18 @@ private:
 - 说明使用场景和预期效果
 - 欢迎提供设计方案
 
-## 📄 许可证
-
-本项目采用 [MIT 许可证](LICENSE) - 详见 LICENSE 文件
-
 ## 👨‍💻 作者信息
 
 **wwwTwilight**
 - 🐙 GitHub: [@wwwTwilight](https://github.com/wwwTwilight)  
-- 📧 Email: 通过 GitHub 联系
+- 📧 Email: hyman0611wu@gmail.com
 - 🌐 项目: [myCppWebServer](https://github.com/wwwTwilight/myCppWebServer)
+
+### 开发分工
+- **wwwTwilight**: 主要开发者，负责后端核心功能实现以及项目功能规划
+- **Copilot Pro**: 负责前端代码生成和逻辑实现
+
+欢迎参与贡献
 
 ## ⭐ 致谢
 
@@ -395,8 +437,6 @@ private:
 
 <div align="center">
 
-**🌟 MyPoorWebServerInCpp - 从简陋到强大的 C++ Web 服务器之路 🌟**
-
-Made with ❤️ by wwwTwilight
+**🌟 MyPoorWebServerInCpp 🌟**
 
 </div>
