@@ -142,7 +142,7 @@ mysql --version
 dpkg -l | grep libmysqlcppconn-dev
 ```
 
-如果没有安装，请访问[MySQL Connector/C++](https://dev.mysql.com/downloads/connector/cpp/)，并选择下载符合您操作系统的安装程序并完成安装
+如果没有安装，请访问[MySQL Connector/C++](https://dev.mysql.com/downloads/connector/cpp/)，并选择下载符合您操作系统的安装程序并完成安装，解压之后应该会有一个类似 `mysql-connector-c++-8.0.33-linux-glibc2.17-x86_64` 的目录，我建议你将其中的 `include/jdbc` 和 `lib（lib64）` 目录中的内容添加到你的系统路径`/usr/include` 和 `/usr/lib`中，这样子IDE的解释器可以找到相关的头文件和库文件了，不然IDE会显示错误。
 
 这之后就是一个比较麻烦的点了，需要确定安装之后的 MySQL Connector/C++ 头文件和库函数的路径。我们先来找头文件，我们需要找到这几个头文件，
 

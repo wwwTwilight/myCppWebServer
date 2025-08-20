@@ -21,7 +21,10 @@ int main() {
 
     server_socket = startServer(port);
 
-    SQLinit();
+    if(SQLinit()) {
+        cerr << "Failed to initialize SQL" << endl;
+        return 1;
+    }
     routeInit(); // 初始化路由表
 
     while (1) {
